@@ -26,29 +26,43 @@ var localizationOptions = new RequestLocalizationOptions()
 localizationOptions.RequestCultureProviders.Insert(0, 
     new CookieRequestCultureProvider());
 
-// Configure Database with proper environment variable handling
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// For Render.com, the connection string might be passed differently
 if (string.IsNullOrEmpty(connectionString))
 {
-    // Try to get from environment variable (Render's format)
-    connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+    connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
     
-    // If still null, try Render's individual database environment variables
     if (string.IsNullOrEmpty(connectionString))
     {
-        var dbHost = Environment.GetEnvironmentVariable("DATABASE_HOST");
-        var dbName = Environment.GetEnvironmentVariable("DATABASE_NAME") ?? "InventoryManagement";
-        var dbUser = Environment.GetEnvironmentVariable("DATABASE_USER");
-        var dbPassword = Environment.GetEnvironmentVariable("DATABASE_PASSWORD");
-        var dbPort = Environment.GetEnvironmentVariable("DATABASE_PORT") ?? "5432";
+        connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+    }
+    
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        var dbHost = Environment.GetEnvironmentVariable("DATABASE_HOST") ?? 
+                    Environment.GetEnvironmentVariable("PGHOST");
+        var dbPort = Environment.GetEnvironmentVariable("DATABASE_PORT") ?? 
+                    Environment.GetEnvironmentVariable("PGPORT") ?? "5432";
+        var dbName = Environment.GetEnvironmentVariable("DATABASE_NAME") ?? 
+                    Environment.GetEnvironmentVariable("PGDATABASE") ?? "inventorymanagement";
+        var dbUser = Environment.GetEnvironmentVariable("DATABASE_USER") ?? 
+                    Environment.GetEnvironmentVariable("PGUSER");
+        var dbPassword = Environment.GetEnvironmentVariable("DATABASE_PASSWORD") ?? 
+                        Environment.GetEnvironmentVariable("PGPASSWORD");
         
         if (!string.IsNullOrEmpty(dbHost) && !string.IsNullOrEmpty(dbUser) && !string.IsNullOrEmpty(dbPassword))
         {
-            connectionString = $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword}";
+            connectionString = $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword};SSL Mode=Require;Trust Server Certificate=true";
         }
     }
+}
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new InvalidOperationException(
+        "Could not construct database connection string. " +
+        "Please ensure database environment variables are set correctly."
+    );
 }
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
