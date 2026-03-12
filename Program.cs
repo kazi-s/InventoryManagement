@@ -4,10 +4,11 @@ using InventoryManagement.Data;
 using InventoryManagement.Models.Entities;
 using Microsoft.AspNetCore.Localization;
 using InventoryManagement.Hubs;
-using Npgsql; // Add this using
+using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
@@ -26,6 +27,7 @@ var localizationOptions = new RequestLocalizationOptions()
 localizationOptions.RequestCultureProviders.Insert(0, 
     new CookieRequestCultureProvider());
 
+// Configure Database with proper environment variable handling
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 if (string.IsNullOrEmpty(connectionString))
@@ -43,7 +45,7 @@ if (string.IsNullOrEmpty(connectionString))
         var port = uri.Port > 0 ? uri.Port : 5432;
         var database = uri.AbsolutePath.TrimStart('/');
         
-        var builder = new NpgsqlConnectionStringBuilder
+        var npgsqlBuilder = new NpgsqlConnectionStringBuilder
         {
             Host = host,
             Port = port,
@@ -53,14 +55,16 @@ if (string.IsNullOrEmpty(connectionString))
             SslMode = SslMode.Require,
             TrustServerCertificate = true
         };
-        connectionString = builder.ToString();
+        connectionString = npgsqlBuilder.ToString();
     }
     
+    // If still null, try ConnectionStrings__DefaultConnection
     if (string.IsNullOrEmpty(connectionString))
     {
         connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
     }
     
+    // If still null, try individual variables
     if (string.IsNullOrEmpty(connectionString))
     {
         var dbHost = Environment.GetEnvironmentVariable("DATABASE_HOST") ?? 
@@ -76,7 +80,7 @@ if (string.IsNullOrEmpty(connectionString))
         
         if (!string.IsNullOrEmpty(dbHost) && !string.IsNullOrEmpty(dbUser) && !string.IsNullOrEmpty(dbPassword))
         {
-            var builder = new NpgsqlConnectionStringBuilder
+            var npgsqlBuilder = new NpgsqlConnectionStringBuilder
             {
                 Host = dbHost,
                 Port = int.Parse(dbPort),
@@ -86,7 +90,7 @@ if (string.IsNullOrEmpty(connectionString))
                 SslMode = SslMode.Require,
                 TrustServerCertificate = true
             };
-            connectionString = builder.ToString();
+            connectionString = npgsqlBuilder.ToString();
         }
     }
 }
@@ -123,6 +127,7 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
+// Configure Authentication with Google and Facebook
 builder.Services.AddAuthentication()
     .AddGoogle(options =>
     {
