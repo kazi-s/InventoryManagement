@@ -26,9 +26,33 @@ var localizationOptions = new RequestLocalizationOptions()
 localizationOptions.RequestCultureProviders.Insert(0, 
     new CookieRequestCultureProvider());
 
-// Configure Database
+// Configure Database with proper environment variable handling
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// For Render.com, the connection string might be passed differently
+if (string.IsNullOrEmpty(connectionString))
+{
+    // Try to get from environment variable (Render's format)
+    connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+    
+    // If still null, try Render's individual database environment variables
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        var dbHost = Environment.GetEnvironmentVariable("DATABASE_HOST");
+        var dbName = Environment.GetEnvironmentVariable("DATABASE_NAME") ?? "InventoryManagement";
+        var dbUser = Environment.GetEnvironmentVariable("DATABASE_USER");
+        var dbPassword = Environment.GetEnvironmentVariable("DATABASE_PASSWORD");
+        var dbPort = Environment.GetEnvironmentVariable("DATABASE_PORT") ?? "5432";
+        
+        if (!string.IsNullOrEmpty(dbHost) && !string.IsNullOrEmpty(dbUser) && !string.IsNullOrEmpty(dbPassword))
+        {
+            connectionString = $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword}";
+        }
+    }
+}
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(connectionString));
 
 // Configure Identity
 builder.Services.AddIdentity<User, IdentityRole>(options =>
