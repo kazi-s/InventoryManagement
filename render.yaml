@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: inventory-management
+    runtime: docker
+    repo: https://github.com/kazi-s/InventoryManagement
+    plan: free
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ConnectionStrings__DefaultConnection
+        fromDatabase:
+          name: inventory-db
+          property: connectionString
+
+databases:
+  - name: inventory-db
+    plan: free
