@@ -31,5 +31,5 @@ services:
 databases:
   - name: inventory-db
     plan: free
-    databaseName: InventoryManagement
+    databaseName: inventorymanagement
     user: inventory_user
