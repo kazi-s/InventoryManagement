@@ -4,10 +4,10 @@ using InventoryManagement.Data;
 using InventoryManagement.Models.Entities;
 using Microsoft.AspNetCore.Localization;
 using InventoryManagement.Hubs;
+using Npgsql; // Add this using
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
@@ -30,7 +30,31 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 if (string.IsNullOrEmpty(connectionString))
 {
-    connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
+    // Try DATABASE_URL first (Render's preferred format)
+    var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+    if (!string.IsNullOrEmpty(databaseUrl))
+    {
+        // Parse DATABASE_URL into Npgsql connection string
+        var uri = new Uri(databaseUrl);
+        var userInfo = uri.UserInfo.Split(':');
+        var username = userInfo[0];
+        var password = userInfo[1];
+        var host = uri.Host;
+        var port = uri.Port > 0 ? uri.Port : 5432;
+        var database = uri.AbsolutePath.TrimStart('/');
+        
+        var builder = new NpgsqlConnectionStringBuilder
+        {
+            Host = host,
+            Port = port,
+            Database = database,
+            Username = username,
+            Password = password,
+            SslMode = SslMode.Require,
+            TrustServerCertificate = true
+        };
+        connectionString = builder.ToString();
+    }
     
     if (string.IsNullOrEmpty(connectionString))
     {
@@ -52,7 +76,17 @@ if (string.IsNullOrEmpty(connectionString))
         
         if (!string.IsNullOrEmpty(dbHost) && !string.IsNullOrEmpty(dbUser) && !string.IsNullOrEmpty(dbPassword))
         {
-            connectionString = $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword};SSL Mode=Require;Trust Server Certificate=true";
+            var builder = new NpgsqlConnectionStringBuilder
+            {
+                Host = dbHost,
+                Port = int.Parse(dbPort),
+                Database = dbName,
+                Username = dbUser,
+                Password = dbPassword,
+                SslMode = SslMode.Require,
+                TrustServerCertificate = true
+            };
+            connectionString = builder.ToString();
         }
     }
 }
@@ -89,7 +123,6 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// Configure Authentication with Google and Facebook
 builder.Services.AddAuthentication()
     .AddGoogle(options =>
     {
