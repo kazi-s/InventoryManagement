@@ -26,11 +26,8 @@ var localizationOptions = new RequestLocalizationOptions()
 localizationOptions.RequestCultureProviders.Insert(0, 
     new CookieRequestCultureProvider());
 
-// Configure Database - SIMPLIFIED
-// First try environment variable (Render sets this)
-var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+var connectionString = "Host=dpg-d6pcbkp4tr6s73akeci0-a;Port=5432;Database=inventory_db_9lr5;Username=inventory_db_9lr5_user;Password=w8XosuIXCfCof1FK22Wk6fVUZCKzj4zZ;SSL Mode=Require;Trust Server Certificate=true";
 
-// If not found, try appsettings.json
 if (string.IsNullOrEmpty(connectionString))
 {
     connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
