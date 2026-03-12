@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Home" xml:space="preserve">
+    <value>Inicio</value>
+  </data>
+  <data name="NewInventory" xml:space="preserve">
+    <value>Nuevo Inventario</value>
+  </data>
+  <data name="MyProfile" xml:space="preserve">
+    <value>Mi Perfil</value>
+  </data>
+  <data name="Admin" xml:space="preserve">
+    <value>Administración</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Buscar inventarios...</value>
+  </data>
+  <data name="Login" xml:space="preserve">
+    <value>Iniciar sesión</value>
+  </data>
+  <data name="Register" xml:space="preserve">
+    <value>Registrarse</value>
+  </data>
+  <data name="Logout" xml:space="preserve">
+    <value>Cerrar sesión</value>
+  </data>
+  <data name="Profile" xml:space="preserve">
+    <value>Perfil</value>
+  </data>
+  <data name="MyInventories" xml:space="preserve">
+    <value>Mis Inventarios</value>
+  </data>
+  <data name="SharedWithMe" xml:space="preserve">
+    <value>Compartidos conmigo</value>
+  </data>
+</root>

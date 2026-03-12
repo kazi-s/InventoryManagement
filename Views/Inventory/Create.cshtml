@@ -1,0 +1,200 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@model CreateInventoryViewModel
+
+@{
+    ViewData["Title"] = Localizer["CreateNewInventory"];
+}
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h4>@Localizer["CreateNewInventory"]</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <!-- Basic Information -->
+                    <h5 class="border-bottom pb-2">@Localizer["BasicInformation"]</h5>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label"></label>
+                        <input asp-for="Title" class="form-control" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label"></label>
+                        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label asp-for="CategoryId" class="form-label"></label>
+                            <select asp-for="CategoryId" asp-items="Model.Categories" class="form-select">
+                                <option value="">@Localizer["SelectCategory"]</option>
+                            </select>
+                            <span asp-validation-for="CategoryId" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ImageUrl" class="form-label"></label>
+                            <input asp-for="ImageUrl" class="form-control" placeholder="https://..." />
+                            <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input asp-for="IsPublic" class="form-check-input" />
+                        <label asp-for="IsPublic" class="form-check-label"></label>
+                        <small class="text-muted d-block">@Localizer["PublicDescription"]</small>
+                    </div>
+
+                    <!-- Custom Fields -->
+                    <h5 class="border-bottom pb-2 mt-4">@Localizer["CustomFields"]</h5>
+                    <p class="text-muted small">@Localizer["CustomFieldsDescription"]</p>
+
+                    <!-- String Fields -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6>@Localizer["TextFields"] <small class="text-muted">(@Localizer["UpTo3"])</small></h6>
+                        </div>
+                        <div class="card-body">
+                            @for (int i = 1; i <= 3; i++)
+                            {
+                                <div class="row mb-2 field-row" data-field-type="string" data-field-index="@i">
+                                    <div class="col-md-1">
+                                        <div class="form-check mt-2">
+                                            <input type="checkbox" class="form-check-input field-enabled" 
+                                                   id="String@(i)Enabled" name="String@(i)Enabled" value="true" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="text" class="form-control" 
+                                               id="String@(i)Name" name="String@(i)Name" 
+                                               placeholder="@Localizer["FieldName"]" />
+                                    </div>
+                                    <div class="col-md-5">
+                                        <input type="text" class="form-control" 
+                                               id="String@(i)Description" name="String@(i)Description" 
+                                               placeholder="@Localizer["Description"]" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-check mt-2">
+                                            <input type="checkbox" class="form-check-input" 
+                                                   id="String@(i)ShowInTable" name="String@(i)ShowInTable" value="true" />
+                                            <label class="form-check-label small" for="String@(i)ShowInTable">
+                                                @Localizer["ShowInTable"]
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Number Fields -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6>@Localizer["NumberFields"] <small class="text-muted">(@Localizer["UpTo3"])</small></h6>
+                        </div>
+                        <div class="card-body">
+                            @for (int i = 1; i <= 3; i++)
+                            {
+                                <div class="row mb-2 field-row" data-field-type="number" data-field-index="@i">
+                                    <div class="col-md-1">
+                                        <div class="form-check mt-2">
+                                            <input type="checkbox" class="form-check-input field-enabled" 
+                                                   id="Number@(i)Enabled" name="Number@(i)Enabled" value="true" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="text" class="form-control" 
+                                               id="Number@(i)Name" name="Number@(i)Name" 
+                                               placeholder="@Localizer["FieldName"]" />
+                                    </div>
+                                    <div class="col-md-5">
+                                        <input type="text" class="form-control" 
+                                               id="Number@(i)Description" name="Number@(i)Description" 
+                                               placeholder="@Localizer["Description"]" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-check mt-2">
+                                            <input type="checkbox" class="form-check-input" 
+                                                   id="Number@(i)ShowInTable" name="Number@(i)ShowInTable" value="true" />
+                                            <label class="form-check-label small" for="Number@(i)ShowInTable">
+                                                @Localizer["ShowInTable"]
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Boolean Fields -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6>@Localizer["BooleanFields"] <small class="text-muted">(@Localizer["UpTo3"])</small></h6>
+                        </div>
+                        <div class="card-body">
+                            @for (int i = 1; i <= 3; i++)
+                            {
+                                <div class="row mb-2 field-row" data-field-type="boolean" data-field-index="@i">
+                                    <div class="col-md-1">
+                                        <div class="form-check mt-2">
+                                            <input type="checkbox" class="form-check-input field-enabled" 
+                                                   id="Bool@(i)Enabled" name="Bool@(i)Enabled" value="true" />
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="text" class="form-control" 
+                                               id="Bool@(i)Name" name="Bool@(i)Name" 
+                                               placeholder="@Localizer["FieldName"]" />
+                                    </div>
+                                    <div class="col-md-5">
+                                        <input type="text" class="form-control" 
+                                               id="Bool@(i)Description" name="Bool@(i)Description" 
+                                               placeholder="@Localizer["Description"]" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-check mt-2">
+                                            <input type="checkbox" class="form-check-input" 
+                                                   id="Bool@(i)ShowInTable" name="Bool@(i)ShowInTable" value="true" />
+                                            <label class="form-check-label small" for="Bool@(i)ShowInTable">
+                                                @Localizer["ShowInTable"]
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">@Localizer["CreateInventory"]</button>
+                        <a asp-action="MyInventories" class="btn btn-secondary">@Localizer["Cancel"]</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Enable/disable field inputs based on checkbox
+        document.querySelectorAll('.field-enabled').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const row = this.closest('.field-row');
+                const inputs = row.querySelectorAll('input:not(.field-enabled)');
+                inputs.forEach(input => {
+                    input.disabled = !this.checked;
+                });
+            });
+        });
+    </script>
+}

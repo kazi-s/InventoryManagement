@@ -1,0 +1,356 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@using System.Text.Json
+@inject IViewLocalizer Localizer
+@model Inventory
+
+@functions {
+    string GetPartTypeName(string type)
+    {
+        return type switch
+        {
+            "fixed" => Localizer["FixedText"].Value,
+            "random20" => Localizer["Random20bit"].Value,
+            "random32" => Localizer["Random32bit"].Value,
+            "random6digit" => Localizer["Random6digit"].Value,
+            "random9digit" => Localizer["Random9digit"].Value,
+            "guid" => Localizer["GUID"].Value,
+            "date" => Localizer["Date"].Value,
+            "sequence" => Localizer["Sequence"].Value,
+            _ => type
+        };
+    }
+}
+
+@{
+    var format = string.IsNullOrEmpty(Model.CustomIdFormat) 
+        ? new List<IdPart>() 
+        : JsonSerializer.Deserialize<List<IdPart>>(Model.CustomIdFormat) ?? new List<IdPart>();
+}
+
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> 
+            @Localizer["IdFormatHelp"]
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card mb-3">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">@Localizer["IdParts"]</h5>
+                        <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addPartModal">
+                            <i class="bi bi-plus"></i> @Localizer["AddPart"]
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="idPartsList" class="mb-3">
+                            @if (!format.Any())
+                            {
+                                <p class="text-muted text-center py-3">@Localizer["NoParts"]</p>
+                            }
+                            else
+                            {
+                                foreach (var part in format.OrderBy(p => p.Order))
+                                {
+                                    <div class="alert alert-secondary d-flex justify-content-between align-items-center mb-2" 
+                                         data-part-type="@part.Type" data-part-value="@part.Value" data-part-format="@part.Format">
+                                        <div>
+                                            <i class="bi bi-grip-vertical me-2" style="cursor: move;"></i>
+                                            <span class="badge bg-primary me-2">@GetPartTypeName(part.Type)</span>
+                                            @if (part.Type == "fixed" && !string.IsNullOrEmpty(part.Value))
+                                            {
+                                                <span>"@part.Value"</span>
+                                            }
+                                            else if (!string.IsNullOrEmpty(part.Format))
+                                            {
+                                                <span class="text-muted">(@part.Format)</span>
+                                            }
+                                        </div>
+                                        <div>
+                                            <button type="button" class="btn btn-sm btn-outline-danger remove-part">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">@Localizer["Preview"]</label>
+                            <div class="bg-dark text-light p-3 rounded font-monospace" id="idPreview">
+                                @Model.Title
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-primary" id="saveIdFormat">
+                            <i class="bi bi-check-circle"></i> @Localizer["SaveFormat"]
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">@Localizer["AvailableParts"]</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            <button type="button" class="list-group-item list-group-item-action add-part-preset" data-type="fixed">
+                                <i class="bi bi-text-left"></i> @Localizer["FixedText"]
+                                <small class="text-muted d-block">@Localizer["FixedTextDesc"]</small>
+                            </button>
+                            <button type="button" class="list-group-item list-group-item-action add-part-preset" data-type="random20">
+                                <i class="bi bi-dice-6"></i> @Localizer["Random20bit"]
+                                <small class="text-muted d-block">@Localizer["Random20bitDesc"]</small>
+                            </button>
+                            <button type="button" class="list-group-item list-group-item-action add-part-preset" data-type="random32">
+                                <i class="bi bi-dice-6"></i> @Localizer["Random32bit"]
+                                <small class="text-muted d-block">@Localizer["Random32bitDesc"]</small>
+                            </button>
+                            <button type="button" class="list-group-item list-group-item-action add-part-preset" data-type="random6digit">
+                                <i class="bi bi-dice-6"></i> @Localizer["Random6digit"]
+                                <small class="text-muted d-block">@Localizer["Random6digitDesc"]</small>
+                            </button>
+                            <button type="button" class="list-group-item list-group-item-action add-part-preset" data-type="random9digit">
+                                <i class="bi bi-dice-6"></i> @Localizer["Random9digit"]
+                                <small class="text-muted d-block">@Localizer["Random9digitDesc"]</small>
+                            </button>
+                            <button type="button" class="list-group-item list-group-item-action add-part-preset" data-type="guid">
+                                <i class="bi bi-uuid"></i> @Localizer["GUID"]
+                                <small class="text-muted d-block">@Localizer["GUIDDesc"]</small>
+                            </button>
+                            <button type="button" class="list-group-item list-group-item-action add-part-preset" data-type="date">
+                                <i class="bi bi-calendar"></i> @Localizer["Date"]
+                                <small class="text-muted d-block">@Localizer["DateDesc"]</small>
+                            </button>
+                            <button type="button" class="list-group-item list-group-item-action add-part-preset" data-type="sequence">
+                                <i class="bi bi-sort-numeric-up"></i> @Localizer["Sequence"]
+                                <small class="text-muted d-block">@Localizer["SequenceDesc"]</small>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Part Modal -->
+<div class="modal fade" id="addPartModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@Localizer["AddPart"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addPartForm">
+                    <div class="mb-3">
+                        <label class="form-label">@Localizer["PartType"]</label>
+                        <select class="form-select" id="partType" required>
+                            <option value="">@Localizer["SelectType"]</option>
+                            <option value="fixed">@Localizer["FixedText"]</option>
+                            <option value="random20">@Localizer["Random20bit"]</option>
+                            <option value="random32">@Localizer["Random32bit"]</option>
+                            <option value="random6digit">@Localizer["Random6digit"]</option>
+                            <option value="random9digit">@Localizer["Random9digit"]</option>
+                            <option value="guid">@Localizer["GUID"]</option>
+                            <option value="date">@Localizer["Date"]</option>
+                            <option value="sequence">@Localizer["Sequence"]</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3" id="fixedValueGroup" style="display: none;">
+                        <label class="form-label">@Localizer["FixedText"]</label>
+                        <input type="text" class="form-control" id="fixedValue" />
+                    </div>
+                    
+                    <div class="mb-3" id="formatGroup" style="display: none;">
+                        <label class="form-label">@Localizer["Format"]</label>
+                        <input type="text" class="form-control" id="partFormat" placeholder="e.g., D6 for 6-digit with leading zeros" />
+                        <small class="text-muted">@Localizer["FormatHelp"]</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Localizer["Cancel"]</button>
+                <button type="button" class="btn btn-primary" id="addPartConfirm">@Localizer["Add"]</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+    let parts = @Html.Raw(JsonSerializer.Serialize(format));
+
+    // Initialize drag and drop
+    const partsList = document.getElementById('idPartsList');
+    const sortable = new Sortable(partsList, {
+        animation: 150,
+        handle: '.bi-grip-vertical',
+        onEnd: function() {
+            updatePreview();
+        }
+    });
+
+    // Add part from preset
+    document.querySelectorAll('.add-part-preset').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const type = this.dataset.type;
+            
+            if (type === 'fixed') {
+                // Show modal for fixed text
+                document.getElementById('partType').value = 'fixed';
+                document.getElementById('fixedValueGroup').style.display = 'block';
+                document.getElementById('formatGroup').style.display = 'block';
+                $('#addPartModal').modal('show');
+            } else {
+                // Add directly with default format
+                addPart(type);
+            }
+        });
+    });
+
+    // Show/hide fields based on type in modal
+    document.getElementById('partType').addEventListener('change', function() {
+        const type = this.value;
+        document.getElementById('fixedValueGroup').style.display = type === 'fixed' ? 'block' : 'none';
+        document.getElementById('formatGroup').style.display = type === 'sequence' ? 'block' : 'none';
+    });
+
+    // Add part from modal
+    document.getElementById('addPartConfirm').addEventListener('click', function() {
+        const type = document.getElementById('partType').value;
+        const fixedValue = document.getElementById('fixedValue').value;
+        const format = document.getElementById('partFormat').value;
+        
+        addPart(type, fixedValue, format);
+        $('#addPartModal').modal('hide');
+        
+        // Reset form
+        document.getElementById('addPartForm').reset();
+        document.getElementById('fixedValueGroup').style.display = 'none';
+        document.getElementById('formatGroup').style.display = 'none';
+    });
+
+    function addPart(type, fixedValue = '', format = '') {
+        const part = {
+            type: type,
+            value: fixedValue,
+            format: format,
+            order: parts.length
+        };
+        
+        parts.push(part);
+        renderPart(part);
+        updatePreview();
+    }
+
+    function renderPart(part) {
+        const div = document.createElement('div');
+        div.className = 'alert alert-secondary d-flex justify-content-between align-items-center mb-2';
+        div.dataset.partType = part.type;
+        div.dataset.partValue = part.value || '';
+        div.dataset.partFormat = part.format || '';
+        
+        div.innerHTML = `
+            <div>
+                <i class="bi bi-grip-vertical me-2" style="cursor: move;"></i>
+                <span class="badge bg-primary me-2">${getPartTypeName(part.type)}</span>
+                ${part.type === 'fixed' && part.value ? `<span>"${part.value}"</span>` : ''}
+                ${part.format ? `<span class="text-muted">(${part.format})</span>` : ''}
+            </div>
+            <div>
+                <button type="button" class="btn btn-sm btn-outline-danger remove-part">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        `;
+        
+        partsList.appendChild(div);
+        
+        // Add remove event
+        div.querySelector('.remove-part').addEventListener('click', function() {
+            const index = Array.from(partsList.children).indexOf(div);
+            parts.splice(index, 1);
+            div.remove();
+            updatePreview();
+        });
+    }
+
+    function getPartTypeName(type) {
+        const names = {
+            'fixed': '@Localizer["FixedText"]',
+            'random20': '@Localizer["Random20bit"]',
+            'random32': '@Localizer["Random32bit"]',
+            'random6digit': '@Localizer["Random6digit"]',
+            'random9digit': '@Localizer["Random9digit"]',
+            'guid': '@Localizer["GUID"]',
+            'date': '@Localizer["Date"]',
+            'sequence': '@Localizer["Sequence"]'
+        };
+        return names[type] || type;
+    }
+
+    function updatePreview() {
+        // Get current order from DOM
+        const currentParts = [];
+        Array.from(partsList.children).forEach(child => {
+            currentParts.push({
+                type: child.dataset.partType,
+                value: child.dataset.partValue,
+                format: child.dataset.partFormat
+            });
+        });
+        
+        fetch('@Url.Action("GenerateIdPreview", "Inventory")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                inventoryId: @Model.Id,
+                parts: currentParts 
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('idPreview').textContent = data.preview;
+        });
+    }
+
+    // Save format
+    document.getElementById('saveIdFormat').addEventListener('click', function() {
+        // Get current order from DOM
+        const currentParts = [];
+        Array.from(partsList.children).forEach((child, index) => {
+            currentParts.push({
+                type: child.dataset.partType,
+                value: child.dataset.partValue,
+                format: child.dataset.partFormat,
+                order: index
+            });
+        });
+        
+        fetch('@Url.Action("SaveIdFormat", "Inventory")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                inventoryId: @Model.Id,
+                parts: currentParts 
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('@Localizer["FormatSaved"]');
+            }
+        });
+    });
+</script>

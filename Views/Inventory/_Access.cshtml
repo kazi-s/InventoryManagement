@@ -1,0 +1,238 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Microsoft.AspNetCore.Identity
+@inject IViewLocalizer Localizer
+@inject UserManager<User> UserManager
+@model Inventory
+
+@{
+    var canEdit = User.IsInRole("Admin") || Model.CreatorId == UserManager.GetUserId(User);
+}
+
+<div class="row">
+    <div class="col-12">
+        @if (canEdit)
+        {
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">@Localizer["PublicAccess"]</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="isPublicSwitch" @(Model.IsPublic ? "checked" : "")>
+                        <label class="form-check-label" for="isPublicSwitch">@Localizer["AllowAllAuthenticatedUsers"]</label>
+                    </div>
+                    <small class="text-muted">@Localizer["PublicAccessDescription"]</small>
+                </div>
+            </div>
+
+            <div class="card mb-3" id="userAccessSection" style="@(Model.IsPublic ? "display: none;" : "")">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">@Localizer["UserAccess"]</h5>
+                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                        <i class="bi bi-plus"></i> @Localizer["AddUser"]
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-outline-secondary sort-btn" data-sort="name">@Localizer["SortByName"]</button>
+                            <button type="button" class="btn btn-outline-secondary sort-btn" data-sort="email">@Localizer["SortByEmail"]</button>
+                        </div>
+                    </div>
+
+                    <table class="table table-hover" id="accessTable">
+                        <thead>
+                            <tr>
+                                <th>@Localizer["User"]</th>
+                                <th>@Localizer["Email"]</th>
+                                <th>@Localizer["Added"]</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var accessList = Model.AccessList != null ? Model.AccessList.OrderBy(a => a.User?.UserName) : Enumerable.Empty<InventoryAccess>();
+                            }
+                            @foreach (var access in accessList)
+                            {
+                                <tr data-user-id="@access.UserId">
+                                    <td>@access.User?.UserName</td>
+                                    <td>@access.User?.Email</td>
+                                    <td>@access.GrantedAt.ToString("MMM dd, yyyy")</td>
+                                    <td class="text-end">
+                                        <button type="button" class="btn btn-sm btn-outline-danger remove-user" data-user-id="@access.UserId">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> @Localizer["AccessInfo"]
+            </div>
+            @if (Model.IsPublic)
+            {
+                <p>@Localizer["ThisInventoryIsPublic"]</p>
+            }
+            else
+            {
+                <p>@Localizer["ThisInventoryIsPrivate"]</p>
+            }
+        }
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@Localizer["AddUser"]</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">@Localizer["SearchUser"]</label>
+                    <input type="text" class="form-control" id="userSearch" placeholder="@Localizer["TypeNameOrEmail"]" />
+                    <div id="userSuggestions" class="list-group mt-1" style="position: absolute; z-index: 1000; display: none;"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Localizer["Cancel"]</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Public/Private toggle
+    document.getElementById('isPublicSwitch')?.addEventListener('change', function() {
+        const userSection = document.getElementById('userAccessSection');
+        userSection.style.display = this.checked ? 'none' : 'block';
+        
+        fetch('@Url.Action("UpdateAccess", "Inventory")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                inventoryId: @Model.Id,
+                isPublic: this.checked
+            })
+        });
+    });
+
+    // User search with autocomplete
+    const userSearch = document.getElementById('userSearch');
+    const suggestions = document.getElementById('userSuggestions');
+    
+    userSearch?.addEventListener('input', function() {
+        const query = this.value;
+        if (query.length < 2) {
+            suggestions.style.display = 'none';
+            return;
+        }
+        
+        fetch(`/User/Search?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(users => {
+                suggestions.innerHTML = '';
+                users.forEach(user => {
+                    const item = document.createElement('button');
+                    item.className = 'list-group-item list-group-item-action';
+                    item.innerHTML = `<strong>${user.userName}</strong><br /><small>${user.email}</small>`;
+                    item.onclick = () => addUser(user.id, user.userName, user.email);
+                    suggestions.appendChild(item);
+                });
+                suggestions.style.display = users.length ? 'block' : 'none';
+            });
+    });
+
+    function addUser(userId, userName, email) {
+        fetch('@Url.Action("AddUserAccess", "Inventory")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                inventoryId: @Model.Id,
+                userId: userId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const tbody = document.querySelector('#accessTable tbody');
+                const row = document.createElement('tr');
+                row.dataset.userId = userId;
+                row.innerHTML = `
+                    <td>${userName}</td>
+                    <td>${email}</td>
+                    <td>${new Date().toLocaleDateString()}</td>
+                    <td class="text-end">
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-user" data-user-id="${userId}">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+                $('#addUserModal').modal('hide');
+                userSearch.value = '';
+                suggestions.style.display = 'none';
+            }
+        });
+    }
+
+    // Remove user access
+    document.querySelectorAll('.remove-user').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const userId = this.dataset.userId;
+            const row = this.closest('tr');
+            
+            fetch('@Url.Action("RemoveUserAccess", "Inventory")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    inventoryId: @Model.Id,
+                    userId: userId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    row.remove();
+                }
+            });
+        });
+    });
+
+    // Sorting
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const sortBy = this.dataset.sort;
+            const tbody = document.querySelector('#accessTable tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            rows.sort((a, b) => {
+                const aVal = sortBy === 'name' 
+                    ? a.cells[0].textContent 
+                    : a.cells[1].textContent;
+                const bVal = sortBy === 'name' 
+                    ? b.cells[0].textContent 
+                    : b.cells[1].textContent;
+                return aVal.localeCompare(bVal);
+            });
+            
+            tbody.innerHTML = '';
+            rows.forEach(row => tbody.appendChild(row));
+        });
+    });
+</script>

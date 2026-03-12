@@ -1,0 +1,263 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@model Inventory
+
+@{
+    var items = Model.Items ?? new List<Item>();
+    var itemCount = items.Count;
+}
+
+<div class="row">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">@Localizer["TotalItems"]</h5>
+                <h2 class="display-4">@itemCount</h2>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">@Localizer["TotalLikes"]</h5>
+                <h2 class="display-4">@items.Sum(i => i.Likes?.Count ?? 0)</h2>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">@Localizer["TotalComments"]</h5>
+                <h2 class="display-4">@(Model.Comments?.Count ?? 0)</h2>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h5 class="card-title">@Localizer["LastAdded"]</h5>
+                <h6>@(items.OrderByDescending(i => i.CreatedAt).FirstOrDefault()?.CreatedAt.ToString("MMM dd, yyyy") ?? "-")</h6>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Number Fields Statistics -->
+@if (Model.Number1Enabled || Model.Number2Enabled || Model.Number3Enabled)
+{
+    <div class="card mb-3">
+        <div class="card-header">
+            <h5>@Localizer["NumericFields"]</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                @if (Model.Number1Enabled)
+                {
+                    var values = items.Select(i => i.NumberValue1).Where(v => v.HasValue).Select(v => v.Value).ToList();
+                    if (values.Any())
+                    {
+                        <div class="col-md-4 mb-2">
+                            <strong>@Model.Number1Name:</strong><br />
+                            <span class="badge bg-secondary">@Localizer["Min"]: @values.Min()</span>
+                            <span class="badge bg-secondary">@Localizer["Max"]: @values.Max()</span>
+                            <span class="badge bg-secondary">@Localizer["Avg"]: @values.Average():F2</span>
+                            <span class="badge bg-secondary">@Localizer["Count"]: @values.Count</span>
+                        </div>
+                    }
+                }
+                
+                @if (Model.Number2Enabled)
+                {
+                    var values = items.Select(i => i.NumberValue2).Where(v => v.HasValue).Select(v => v.Value).ToList();
+                    if (values.Any())
+                    {
+                        <div class="col-md-4 mb-2">
+                            <strong>@Model.Number2Name:</strong><br />
+                            <span class="badge bg-secondary">@Localizer["Min"]: @values.Min()</span>
+                            <span class="badge bg-secondary">@Localizer["Max"]: @values.Max()</span>
+                            <span class="badge bg-secondary">@Localizer["Avg"]: @values.Average():F2</span>
+                            <span class="badge bg-secondary">@Localizer["Count"]: @values.Count</span>
+                        </div>
+                    }
+                }
+                
+                @if (Model.Number3Enabled)
+                {
+                    var values = items.Select(i => i.NumberValue3).Where(v => v.HasValue).Select(v => v.Value).ToList();
+                    if (values.Any())
+                    {
+                        <div class="col-md-4 mb-2">
+                            <strong>@Model.Number3Name:</strong><br />
+                            <span class="badge bg-secondary">@Localizer["Min"]: @values.Min()</span>
+                            <span class="badge bg-secondary">@Localizer["Max"]: @values.Max()</span>
+                            <span class="badge bg-secondary">@Localizer["Avg"]: @values.Average():F2</span>
+                            <span class="badge bg-secondary">@Localizer["Count"]: @values.Count</span>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<!-- String Fields Statistics -->
+@if (Model.String1Enabled || Model.String2Enabled || Model.String3Enabled)
+{
+    <div class="card mb-3">
+        <div class="card-header">
+            <h5>@Localizer["TextFields"]</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                @if (Model.String1Enabled)
+                {
+                    var values = items.Select(i => i.StringValue1).Where(v => !string.IsNullOrEmpty(v)).ToList();
+                    if (values.Any())
+                    {
+                        var mostFrequent = values.GroupBy(v => v)
+                            .OrderByDescending(g => g.Count())
+                            .FirstOrDefault();
+                            
+                        <div class="col-md-4 mb-2">
+                            <strong>@Model.String1Name:</strong><br />
+                            <span class="badge bg-secondary">@Localizer["Total"]: @values.Count</span>
+                            @if (mostFrequent != null)
+                            {
+                                <span class="badge bg-secondary">@Localizer["MostFrequent"]: @mostFrequent.Key (@mostFrequent.Count())</span>
+                            }
+                        </div>
+                    }
+                }
+                
+                @if (Model.String2Enabled)
+                {
+                    var values = items.Select(i => i.StringValue2).Where(v => !string.IsNullOrEmpty(v)).ToList();
+                    if (values.Any())
+                    {
+                        var mostFrequent = values.GroupBy(v => v)
+                            .OrderByDescending(g => g.Count())
+                            .FirstOrDefault();
+                            
+                        <div class="col-md-4 mb-2">
+                            <strong>@Model.String2Name:</strong><br />
+                            <span class="badge bg-secondary">@Localizer["Total"]: @values.Count</span>
+                            @if (mostFrequent != null)
+                            {
+                                <span class="badge bg-secondary">@Localizer["MostFrequent"]: @mostFrequent.Key (@mostFrequent.Count())</span>
+                            }
+                        </div>
+                    }
+                }
+                
+                @if (Model.String3Enabled)
+                {
+                    var values = items.Select(i => i.StringValue3).Where(v => !string.IsNullOrEmpty(v)).ToList();
+                    if (values.Any())
+                    {
+                        var mostFrequent = values.GroupBy(v => v)
+                            .OrderByDescending(g => g.Count())
+                            .FirstOrDefault();
+                            
+                        <div class="col-md-4 mb-2">
+                            <strong>@Model.String3Name:</strong><br />
+                            <span class="badge bg-secondary">@Localizer["Total"]: @values.Count</span>
+                            @if (mostFrequent != null)
+                            {
+                                <span class="badge bg-secondary">@Localizer["MostFrequent"]: @mostFrequent.Key (@mostFrequent.Count())</span>
+                            }
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Boolean Fields Statistics -->
+@if (Model.Bool1Enabled || Model.Bool2Enabled || Model.Bool3Enabled)
+{
+    <div class="card mb-3">
+        <div class="card-header">
+            <h5>@Localizer["BooleanFields"]</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                @if (Model.Bool1Enabled)
+                {
+                    var trueCount = items.Count(i => i.BoolValue1 == true);
+                    var falseCount = items.Count(i => i.BoolValue1 == false);
+                    var total = trueCount + falseCount;
+                    
+                    if (total > 0)
+                    {
+                        <div class="col-md-4 mb-2">
+                            <strong>@Model.Bool1Name:</strong><br />
+                            <div class="progress mb-1" style="height: 20px;">
+                                <div class="progress-bar bg-success" style="width: @(trueCount * 100 / total)%">
+                                    @Localizer["Yes"]: @trueCount
+                                </div>
+                                <div class="progress-bar bg-danger" style="width: @(falseCount * 100 / total)%">
+                                    @Localizer["No"]: @falseCount
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                
+                @if (Model.Bool2Enabled)
+                {
+                    var trueCount = items.Count(i => i.BoolValue2 == true);
+                    var falseCount = items.Count(i => i.BoolValue2 == false);
+                    var total = trueCount + falseCount;
+                    
+                    if (total > 0)
+                    {
+                        <div class="col-md-4 mb-2">
+                            <strong>@Model.Bool2Name:</strong><br />
+                            <div class="progress mb-1" style="height: 20px;">
+                                <div class="progress-bar bg-success" style="width: @(trueCount * 100 / total)%">
+                                    @Localizer["Yes"]: @trueCount
+                                </div>
+                                <div class="progress-bar bg-danger" style="width: @(falseCount * 100 / total)%">
+                                    @Localizer["No"]: @falseCount
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                
+                @if (Model.Bool3Enabled)
+                {
+                    var trueCount = items.Count(i => i.BoolValue3 == true);
+                    var falseCount = items.Count(i => i.BoolValue3 == false);
+                    var total = trueCount + falseCount;
+                    
+                    if (total > 0)
+                    {
+                        <div class="col-md-4 mb-2">
+                            <strong>@Model.Bool3Name:</strong><br />
+                            <div class="progress mb-1" style="height: 20px;">
+                                <div class="progress-bar bg-success" style="width: @(trueCount * 100 / total)%">
+                                    @Localizer["Yes"]: @trueCount
+                                </div>
+                                <div class="progress-bar bg-danger" style="width: @(falseCount * 100 / total)%">
+                                    @Localizer["No"]: @falseCount
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@if (!items.Any())
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> @Localizer["NoItemsForStats"]
+    </div>
+}

@@ -1,0 +1,65 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@model List<InventoryListViewModel>
+
+@{
+    ViewData["Title"] = Localizer["MyInventories"];
+}
+
+<div class="row mb-4">
+    <div class="col">
+        <h2>@Localizer["MyInventories"]</h2>
+    </div>
+    <div class="col text-end">
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> @Localizer["CreateNew"]
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>@Localizer["Title"]</th>
+                            <th>@Localizer["Category"]</th>
+                            <th>@Localizer["Items"]</th>
+                            <th>@Localizer["Visibility"]</th>
+                            <th>@Localizer["Created"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var inventory in Model)
+                        {
+                            <tr onclick="location.href='@Url.Action("Details", "Inventory", new { id = inventory.Id })'" style="cursor: pointer;">
+                                <td>
+                                    @if (!string.IsNullOrEmpty(inventory.ImageUrl))
+                                    {
+                                        <img src="@inventory.ImageUrl" alt="" style="width: 30px; height: 30px; object-fit: cover;" class="rounded me-2">
+                                    }
+                                    @inventory.Title
+                                </td>
+                                <td>@inventory.CategoryName</td>
+                                <td>@inventory.ItemCount</td>
+                                <td>
+                                    @if (inventory.IsPublic)
+                                    {
+                                        <span class="badge bg-success">@Localizer["Public"]</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning">@Localizer["Private"]</span>
+                                    }
+                                </td>
+                                <td>@inventory.CreatedAt.ToString("MMM dd, yyyy")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

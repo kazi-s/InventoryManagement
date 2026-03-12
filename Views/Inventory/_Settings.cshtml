@@ -1,0 +1,147 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@model Inventory
+
+<form asp-action="UpdateSettings" method="post" class="settings-form">
+    <input type="hidden" name="id" value="@Model.Id" />
+    
+    <div class="mb-3">
+        <label class="form-label">@Localizer["Title"]</label>
+        <input type="text" name="title" class="form-control" value="@Model.Title" required />
+    </div>
+    
+    <div class="mb-3">
+        <label class="form-label">@Localizer["Description"]</label>
+        <textarea name="description" class="form-control" rows="5">@Model.Description</textarea>
+        <small class="text-muted">@Localizer["MarkdownSupported"]</small>
+    </div>
+    
+    <div class="mb-3">
+        <label class="form-label">@Localizer["Category"]</label>
+        <select name="categoryId" class="form-select">
+            @foreach (var category in (SelectList)ViewBag.Categories)
+            {
+                <option value="@category.Value" selected="@(category.Value == Model.CategoryId.ToString())">
+                    @category.Text
+                </option>
+            }
+        </select>
+    </div>
+    
+    <div class="mb-3">
+        <label class="form-label">@Localizer["ImageUrl"]</label>
+        <input type="url" name="imageUrl" class="form-control" value="@Model.ImageUrl" />
+    </div>
+    
+    <div class="mb-3">
+        <label class="form-label">@Localizer["Tags"]</label>
+        <input type="text" id="tagInput" class="form-control" placeholder="@Localizer["TypeTags"]" />
+        <div id="tagContainer" class="mt-2">
+            @foreach (var tag in Model.InventoryTags?.Select(it => it.Tag) ?? new List<Tag>())
+            {
+                <span class="badge bg-primary me-1 p-2">
+                    @tag.Name
+                    <button type="button" class="btn-close btn-close-white btn-sm ms-1" onclick="removeTag(this)"></button>
+                    <input type="hidden" name="tags" value="@tag.Name" />
+                </span>
+            }
+        </div>
+        <div id="tagSuggestions" class="list-group mt-1" style="position: absolute; z-index: 1000; display: none;"></div>
+    </div>
+    
+    <div class="mb-3 form-check">
+        <input type="checkbox" name="isPublic" class="form-check-input" value="true" @(Model.IsPublic ? "checked" : "") />
+        <label class="form-check-label">@Localizer["IsPublic"]</label>
+    </div>
+    
+    <button type="submit" class="btn btn-primary">@Localizer["SaveSettings"]</button>
+    <div class="alert alert-info mt-3" id="saveStatus" style="display: none;">
+        <i class="bi bi-check-circle"></i> @Localizer["ChangesSaved"]
+    </div>
+</form>
+
+<script>
+    // Auto-save functionality
+    let formChanged = false;
+    let saveTimeout;
+    
+    document.querySelector('.settings-form').addEventListener('input', function() {
+        formChanged = true;
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(autoSave, 7000); // Save after 7 seconds of inactivity
+    });
+    
+    function autoSave() {
+        if (!formChanged) return;
+        
+        const form = document.querySelector('.settings-form');
+        const formData = new FormData(form);
+        
+        fetch('@Url.Action("AutoSaveSettings")', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                formChanged = false;
+                document.getElementById('saveStatus').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('saveStatus').style.display = 'none';
+                }, 3000);
+                
+                // Update row version for optimistic concurrency
+                document.querySelector('input[name="rowVersion"]').value = data.rowVersion;
+            } else if (data.conflict) {
+                alert('@Localizer["SaveConflict"]');
+                location.reload();
+            }
+        });
+    }
+    
+    // Tag autocomplete
+    const tagInput = document.getElementById('tagInput');
+    const tagSuggestions = document.getElementById('tagSuggestions');
+    
+    tagInput.addEventListener('input', function() {
+        const query = this.value;
+        if (query.length < 2) {
+            tagSuggestions.style.display = 'none';
+            return;
+        }
+        
+        fetch(`/Tag/Suggest?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(tags => {
+                tagSuggestions.innerHTML = '';
+                tags.forEach(tag => {
+                    const item = document.createElement('button');
+                    item.className = 'list-group-item list-group-item-action';
+                    item.textContent = tag.name;
+                    item.onclick = () => addTag(tag.name);
+                    tagSuggestions.appendChild(item);
+                });
+                tagSuggestions.style.display = tags.length ? 'block' : 'none';
+            });
+    });
+    
+    function addTag(tagName) {
+        const container = document.getElementById('tagContainer');
+        const tag = document.createElement('span');
+        tag.className = 'badge bg-primary me-1 p-2';
+        tag.innerHTML = `
+            ${tagName}
+            <button type="button" class="btn-close btn-close-white btn-sm ms-1" onclick="removeTag(this)"></button>
+            <input type="hidden" name="tags" value="${tagName}" />
+        `;
+        container.appendChild(tag);
+        tagInput.value = '';
+        tagSuggestions.style.display = 'none';
+        formChanged = true;
+    }
+    
+    function removeTag(btn) {
+        btn.closest('.badge').remove();
+        formChanged = true;
+    }
+</script>

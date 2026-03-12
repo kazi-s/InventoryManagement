@@ -1,0 +1,140 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@{
+    ViewData["Title"] = Localizer["Home"];
+}
+
+<div class="row">
+    <div class="col-12">
+        <h1 class="display-4 mb-4">@Localizer["Welcome"]</h1>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Latest Inventories -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history"></i> @Localizer["LatestInventories"]
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>@Localizer["Title"]</th>
+                            <th>@Localizer["Creator"]</th>
+                            <th>@Localizer["Items"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var inventory in ViewBag.LatestInventories)
+                        {
+                            <tr onclick="location.href='@Url.Action("Details", "Inventory", new { id = inventory.Id })'" style="cursor: pointer;">
+                                <td>
+                                    @if (!string.IsNullOrEmpty(inventory.ImageUrl))
+                                    {
+                                        <img src="@inventory.ImageUrl" alt="" style="width: 30px; height: 30px; object-fit: cover;" class="rounded me-2">
+                                    }
+                                    @inventory.Title
+                                </td>
+                                <td>@inventory.CreatorName</td>
+                                <td>@inventory.ItemCount</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Most Popular Inventories -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-star"></i> @Localizer["MostPopular"]
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>@Localizer["Title"]</th>
+                            <th>@Localizer["Creator"]</th>
+                            <th>@Localizer["Items"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var inventory in ViewBag.PopularInventories)
+                        {
+                            <tr onclick="location.href='@Url.Action("Details", "Inventory", new { id = inventory.Id })'" style="cursor: pointer;">
+                                <td>@inventory.Title</td>
+                                <td>@inventory.CreatorName</td>
+                                <td>@inventory.ItemCount</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tag Cloud -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-tags"></i> @Localizer["PopularTags"]
+                </h5>
+            </div>
+            <div class="card-body">
+                @foreach (var tag in ViewBag.Tags)
+                {
+                    var fontSize = 0.8 + (tag.Count * 0.1);
+                    if (fontSize > 2) fontSize = 2;
+                    
+                    <a href="@Url.Action("Tag", "Search", new { tag = tag.Name })" 
+                       class="badge bg-primary text-decoration-none me-2 mb-2"
+                       style="font-size: @(fontSize)rem;">
+                        @tag.Name <span class="badge bg-light text-dark">@tag.Count</span>
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Theme switching
+        document.querySelectorAll('.theme-switch').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const theme = this.dataset.theme;
+                fetch('@Url.Action("SetTheme", "Home")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(theme)
+                }).then(() => {
+                    document.documentElement.setAttribute('data-bs-theme', theme);
+                });
+            });
+        });
+
+        // Language switching
+        document.querySelectorAll('.language-switch').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const lang = this.dataset.lang;
+                // Set cookie directly
+                document.cookie = ".AspNetCore.Culture=c=" + lang + "|uic=" + lang + "; path=/; expires=" + new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000).toUTCString();
+                location.reload();
+            });
+        });
+    </script>
+}

@@ -1,0 +1,201 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@model Inventory
+
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> @Localizer["FieldsDescription"]
+        </div>
+
+        <!-- String Fields -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">@Localizer["TextFields"] <small class="text-muted">(@Localizer["UpTo3"])</small></h5>
+            </div>
+            <div class="card-body">
+                @for (int i = 1; i <= 3; i++)
+                {
+                    var enabled = (bool?)typeof(Inventory).GetProperty($"String{i}Enabled")?.GetValue(Model) ?? false;
+                    var name = typeof(Inventory).GetProperty($"String{i}Name")?.GetValue(Model) as string;
+                    var description = typeof(Inventory).GetProperty($"String{i}Description")?.GetValue(Model) as string;
+                    var showInTable = (bool?)typeof(Inventory).GetProperty($"String{i}ShowInTable")?.GetValue(Model) ?? false;
+                    
+                    <div class="row mb-3 align-items-center field-row" data-field-type="string" data-field-index="@i">
+                        <div class="col-md-1">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input field-enabled" 
+                                       data-field="string@(i)" @(enabled ? "checked" : "") />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control field-name" 
+                                   data-field="string@(i)" value="@name" 
+                                   placeholder="@Localizer["FieldName"]" @(enabled ? "" : "disabled") />
+                        </div>
+                        <div class="col-md-5">
+                            <input type="text" class="form-control field-description" 
+                                   data-field="string@(i)" value="@description" 
+                                   placeholder="@Localizer["Description"]" @(enabled ? "" : "disabled") />
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input field-show" 
+                                       data-field="string@(i)" @(showInTable ? "checked" : "") 
+                                       @(enabled ? "" : "disabled") />
+                                <label class="form-check-label">@Localizer["ShowInTable"]</label>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Number Fields -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">@Localizer["NumberFields"] <small class="text-muted">(@Localizer["UpTo3"])</small></h5>
+            </div>
+            <div class="card-body">
+                @for (int i = 1; i <= 3; i++)
+                {
+                    var enabled = (bool?)typeof(Inventory).GetProperty($"Number{i}Enabled")?.GetValue(Model) ?? false;
+                    var name = typeof(Inventory).GetProperty($"Number{i}Name")?.GetValue(Model) as string;
+                    var description = typeof(Inventory).GetProperty($"Number{i}Description")?.GetValue(Model) as string;
+                    var showInTable = (bool?)typeof(Inventory).GetProperty($"Number{i}ShowInTable")?.GetValue(Model) ?? false;
+                    
+                    <div class="row mb-3 align-items-center field-row" data-field-type="number" data-field-index="@i">
+                        <div class="col-md-1">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input field-enabled" 
+                                       data-field="number@(i)" @(enabled ? "checked" : "") />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control field-name" 
+                                   data-field="number@(i)" value="@name" 
+                                   placeholder="@Localizer["FieldName"]" @(enabled ? "" : "disabled") />
+                        </div>
+                        <div class="col-md-5">
+                            <input type="text" class="form-control field-description" 
+                                   data-field="number@(i)" value="@description" 
+                                   placeholder="@Localizer["Description"]" @(enabled ? "" : "disabled") />
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input field-show" 
+                                       data-field="number@(i)" @(showInTable ? "checked" : "") 
+                                       @(enabled ? "" : "disabled") />
+                                <label class="form-check-label">@Localizer["ShowInTable"]</label>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Boolean Fields -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">@Localizer["BooleanFields"] <small class="text-muted">(@Localizer["UpTo3"])</small></h5>
+            </div>
+            <div class="card-body">
+                @for (int i = 1; i <= 3; i++)
+                {
+                    var enabled = (bool?)typeof(Inventory).GetProperty($"Bool{i}Enabled")?.GetValue(Model) ?? false;
+                    var name = typeof(Inventory).GetProperty($"Bool{i}Name")?.GetValue(Model) as string;
+                    var description = typeof(Inventory).GetProperty($"Bool{i}Description")?.GetValue(Model) as string;
+                    var showInTable = (bool?)typeof(Inventory).GetProperty($"Bool{i}ShowInTable")?.GetValue(Model) ?? false;
+                    
+                    <div class="row mb-3 align-items-center field-row" data-field-type="bool" data-field-index="@i">
+                        <div class="col-md-1">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input field-enabled" 
+                                       data-field="bool@(i)" @(enabled ? "checked" : "") />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control field-name" 
+                                   data-field="bool@(i)" value="@name" 
+                                   placeholder="@Localizer["FieldName"]" @(enabled ? "" : "disabled") />
+                        </div>
+                        <div class="col-md-5">
+                            <input type="text" class="form-control field-description" 
+                                   data-field="bool@(i)" value="@description" 
+                                   placeholder="@Localizer["Description"]" @(enabled ? "" : "disabled") />
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input field-show" 
+                                       data-field="bool@(i)" @(showInTable ? "checked" : "") 
+                                       @(enabled ? "" : "disabled") />
+                                <label class="form-check-label">@Localizer["ShowInTable"]</label>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <button type="button" class="btn btn-primary" id="saveFields">
+            <i class="bi bi-check-circle"></i> @Localizer["SaveFields"]
+        </button>
+    </div>
+</div>
+
+<script>
+    // Enable/disable fields based on checkbox
+    document.querySelectorAll('.field-enabled').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const field = this.dataset.field;
+            const nameInput = document.querySelector(`.field-name[data-field="${field}"]`);
+            const descInput = document.querySelector(`.field-description[data-field="${field}"]`);
+            const showCheck = document.querySelector(`.field-show[data-field="${field}"]`);
+            
+            [nameInput, descInput, showCheck].forEach(el => {
+                if (el) el.disabled = !this.checked;
+            });
+        });
+    });
+
+    // Save fields
+    document.getElementById('saveFields').addEventListener('click', function() {
+        const fields = [];
+        
+        // Collect all field configurations
+        document.querySelectorAll('.field-row').forEach(row => {
+            const type = row.dataset.fieldType;
+            const index = row.dataset.fieldIndex;
+            const enabled = row.querySelector('.field-enabled').checked;
+            const name = row.querySelector('.field-name')?.value || '';
+            const description = row.querySelector('.field-description')?.value || '';
+            const showInTable = row.querySelector('.field-show')?.checked || false;
+            
+            fields.push({
+                type: type,
+                index: index,
+                enabled: enabled,
+                name: name,
+                description: description,
+                showInTable: showInTable
+            });
+        });
+        
+        fetch('@Url.Action("UpdateFields", "Inventory")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                inventoryId: @Model.Id,
+                fields: fields
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('@Localizer["FieldsSaved"]');
+            }
+        });
+    });
+</script>

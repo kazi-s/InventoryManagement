@@ -1,0 +1,320 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@using Markdig
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<User> UserManager
+@model Inventory
+
+@{
+    ViewData["Title"] = Model.Title;
+    var canEdit = User.Identity?.IsAuthenticated == true && 
+                 (User.IsInRole("Admin") || Model.CreatorId == UserManager.GetUserId(User));
+}
+
+<div class="row mb-4">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">@Localizer["Home"]</a></li>
+                <li class="breadcrumb-item"><a asp-action="MyInventories">@Localizer["MyInventories"]</a></li>
+                <li class="breadcrumb-item active">@Model.Title</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- Inventory Header -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2>
+            @Model.Title
+            @if (Model.IsPublic)
+            {
+                <span class="badge bg-success">@Localizer["Public"]</span>
+            }
+            else
+            {
+                <span class="badge bg-warning">@Localizer["Private"]</span>
+            }
+        </h2>
+        <p class="text-muted">
+            @Localizer["CreatedBy"] @Model.Creator?.UserName @Localizer["On"] @Model.CreatedAt.ToString("MMM dd, yyyy")
+        </p>
+        <div class="mb-3">
+            @Html.Raw(Markdown.ToHtml(Model.Description ?? ""))
+        </div>
+        <div>
+            @foreach (var tag in Model.InventoryTags?.Select(it => it.Tag) ?? new List<Tag>())
+            {
+                <a asp-controller="Search" asp-action="Tag" asp-route-tag="@tag.Name" class="badge bg-primary text-decoration-none me-1">
+                    @tag.Name
+                </a>
+            }
+        </div>
+    </div>
+    <div class="col-md-4">
+        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+        {
+            <img src="@Model.ImageUrl" class="img-fluid rounded" alt="@Model.Title">
+        }
+    </div>
+</div>
+
+<!-- Tabs Navigation -->
+<ul class="nav nav-tabs mb-4" id="inventoryTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="items-tab" data-bs-toggle="tab" data-bs-target="#items" type="button" role="tab">
+            <i class="bi bi-list-ul"></i> @Localizer["Items"] (@Model.Items?.Count ?? 0)
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="discussion-tab" data-bs-toggle="tab" data-bs-target="#discussion" type="button" role="tab">
+            <i class="bi bi-chat"></i> @Localizer["Discussion"] (@Model.Comments?.Count ?? 0)
+        </button>
+    </li>
+    @if (canEdit)
+    {
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab">
+                <i class="bi bi-gear"></i> @Localizer["Settings"]
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="fields-tab" data-bs-toggle="tab" data-bs-target="#fields" type="button" role="tab">
+                <i class="bi bi-input-cursor"></i> @Localizer["Fields"]
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="access-tab" data-bs-toggle="tab" data-bs-target="#access" type="button" role="tab">
+                <i class="bi bi-people"></i> @Localizer["Access"]
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="idformat-tab" data-bs-toggle="tab" data-bs-target="#idformat" type="button" role="tab">
+                <i class="bi bi-hash"></i> @Localizer["IDFormat"]
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="stats-tab" data-bs-toggle="tab" data-bs-target="#stats" type="button" role="tab">
+                <i class="bi bi-graph-up"></i> @Localizer["Statistics"]
+            </button>
+        </li>
+    }
+</ul>
+
+<!-- Tabs Content -->
+<div class="tab-content" id="inventoryTabsContent">
+    <!-- Items Tab -->
+    <div class="tab-pane fade show active" id="items" role="tabpanel">
+        <div class="row mb-3">
+            <div class="col">
+                @if (User.Identity?.IsAuthenticated == true && (canEdit || Model.IsPublic || Model.AccessList?.Any(a => a.UserId == UserManager.GetUserId(User)) == true))
+                {
+                    <a asp-controller="Item" asp-action="Create" asp-route-inventoryId="@Model.Id" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> @Localizer["AddItem"]
+                    </a>
+                }
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>@Localizer["CustomID"]</th>
+                        @if (Model.String1Enabled && Model.String1ShowInTable) { <th>@Model.String1Name</th> }
+                        @if (Model.String2Enabled && Model.String2ShowInTable) { <th>@Model.String2Name</th> }
+                        @if (Model.String3Enabled && Model.String3ShowInTable) { <th>@Model.String3Name</th> }
+                        @if (Model.Number1Enabled && Model.Number1ShowInTable) { <th>@Model.Number1Name</th> }
+                        @if (Model.Number2Enabled && Model.Number2ShowInTable) { <th>@Model.Number2Name</th> }
+                        @if (Model.Number3Enabled && Model.Number3ShowInTable) { <th>@Model.Number3Name</th> }
+                        @if (Model.Bool1Enabled && Model.Bool1ShowInTable) { <th>@Model.Bool1Name</th> }
+                        @if (Model.Bool2Enabled && Model.Bool2ShowInTable) { <th>@Model.Bool2Name</th> }
+                        @if (Model.Bool3Enabled && Model.Bool3ShowInTable) { <th>@Model.Bool3Name</th> }
+                        <th>@Localizer["CreatedBy"]</th>
+                        <th>@Localizer["Likes"]</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items ?? new List<Item>())
+                    {
+                        <tr>
+                            <td>@item.CustomId</td>
+                            @if (Model.String1Enabled && Model.String1ShowInTable) { <td>@item.StringValue1</td> }
+                            @if (Model.String2Enabled && Model.String2ShowInTable) { <td>@item.StringValue2</td> }
+                            @if (Model.String3Enabled && Model.String3ShowInTable) { <td>@item.StringValue3</td> }
+                            @if (Model.Number1Enabled && Model.Number1ShowInTable) { <td>@item.NumberValue1</td> }
+                            @if (Model.Number2Enabled && Model.Number2ShowInTable) { <td>@item.NumberValue2</td> }
+                            @if (Model.Number3Enabled && Model.Number3ShowInTable) { <td>@item.NumberValue3</td> }
+                            @if (Model.Bool1Enabled && Model.Bool1ShowInTable) { <td><input type="checkbox" @(item.BoolValue1 == true ? "checked" : "") disabled /></td> }
+                            @if (Model.Bool2Enabled && Model.Bool2ShowInTable) { <td><input type="checkbox" @(item.BoolValue2 == true ? "checked" : "") disabled /></td> }
+                            @if (Model.Bool3Enabled && Model.Bool3ShowInTable) { <td><input type="checkbox" @(item.BoolValue3 == true ? "checked" : "") disabled /></td> }
+                            <td>@item.CreatedBy?.UserName</td>
+                            <td>
+                                <span class="badge bg-primary">@(item.Likes?.Count ?? 0)</span>
+                                @if (User.Identity?.IsAuthenticated == true)
+                                {
+                                    <button class="btn btn-sm btn-outline-primary like-button" data-item-id="@item.Id">
+                                        <i class="bi bi-heart"></i>
+                                    </button>
+                                }
+                            </td>
+                            <td>
+                                @if (User.Identity?.IsAuthenticated == true && (canEdit || item.CreatedById == UserManager.GetUserId(User)))
+                                {
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            <i class="bi bi-three-dots"></i>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item" asp-controller="Item" asp-action="Edit" asp-route-id="@item.Id">
+                                                    <i class="bi bi-pencil"></i> @Localizer["Edit"]
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item text-danger" asp-controller="Item" asp-action="Delete" asp-route-id="@item.Id">
+                                                    <i class="bi bi-trash"></i> @Localizer["Delete"]
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Discussion Tab -->
+    <div class="tab-pane fade" id="discussion" role="tabpanel">
+        <div class="row">
+            <div class="col-12 mb-4">
+                <h4>@Localizer["Discussion"]</h4>
+                
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <form asp-controller="Comment" asp-action="Create" method="post" class="mb-4">
+                        <input type="hidden" name="inventoryId" value="@Model.Id" />
+                        <div class="mb-3">
+                            <textarea name="content" class="form-control" rows="3" placeholder="@Localizer["WriteComment"]" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">@Localizer["PostComment"]</button>
+                    </form>
+                }
+
+                <div class="comment-list" id="commentList">
+                    @{
+                        var comments = Model.Comments != null ? Model.Comments.OrderByDescending(c => c.CreatedAt) : Enumerable.Empty<Comment>();
+                    }
+                    @foreach (var comment in comments)
+                    {
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <h6 class="card-subtitle mb-2 text-muted">
+                                        <a asp-controller="User" asp-action="Profile" asp-route-id="@comment.UserId">
+                                            @comment.User?.UserName
+                                        </a>
+                                    </h6>
+                                    <small class="text-muted">@comment.CreatedAt.ToString("g")</small>
+                                </div>
+                                <p class="card-text">@Html.Raw(Markdown.ToHtml(comment.Content))</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (canEdit)
+    {
+        <!-- Settings Tab -->
+        <div class="tab-pane fade" id="settings" role="tabpanel">
+            @await Html.PartialAsync("_Settings", Model)
+        </div>
+
+        <!-- Fields Tab -->
+        <div class="tab-pane fade" id="fields" role="tabpanel">
+            @await Html.PartialAsync("_Fields", Model)
+        </div>
+
+        <!-- Access Tab -->
+        <div class="tab-pane fade" id="access" role="tabpanel">
+            @await Html.PartialAsync("_Access", Model)
+        </div>
+
+        <!-- ID Format Tab -->
+        <div class="tab-pane fade" id="idformat" role="tabpanel">
+            @await Html.PartialAsync("_IdFormat", Model)
+        </div>
+
+        <!-- Statistics Tab -->
+        <div class="tab-pane fade" id="stats" role="tabpanel">
+            @await Html.PartialAsync("_Statistics", Model)
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        // Real-time comments with SignalR
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/commentHub")
+            .build();
+
+        connection.on("ReceiveComment", function(comment) {
+            const commentList = document.getElementById('commentList');
+            const commentHtml = `
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <h6 class="card-subtitle mb-2 text-muted">
+                                <a href="/User/Profile/${comment.userId}">${comment.userName}</a>
+                            </h6>
+                            <small class="text-muted">${new Date(comment.createdAt).toLocaleString()}</small>
+                        </div>
+                        <p class="card-text">${comment.content}</p>
+                    </div>
+                </div>
+            `;
+            commentList.insertAdjacentHTML('afterbegin', commentHtml);
+        });
+
+        connection.start().catch(function(err) {
+            return console.error(err.toString());
+        });
+
+        // Like functionality
+        document.querySelectorAll('.like-button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const itemId = this.dataset.itemId;
+                fetch('/Item/Like', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ itemId: itemId })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update like count
+                        const badge = this.previousElementSibling;
+                        badge.textContent = data.likes;
+                        
+                        // Toggle heart icon
+                        const icon = this.querySelector('i');
+                        icon.classList.toggle('bi-heart');
+                        icon.classList.toggle('bi-heart-fill');
+                    }
+                });
+            });
+        });
+    </script>
+}

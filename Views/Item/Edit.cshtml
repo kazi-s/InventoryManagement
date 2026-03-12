@@ -1,0 +1,234 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@model EditItemViewModel
+
+@{
+    ViewData["Title"] = Localizer["EditItem"];
+    var inventory = Model.Inventory;
+}
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h4>@Localizer["EditItemIn"]: @Model.InventoryTitle</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="InventoryId" />
+
+                    <!-- Custom ID -->
+                    <div class="mb-3">
+                        <label asp-for="CustomId" class="form-label"></label>
+                        <input asp-for="CustomId" class="form-control" />
+                        <span asp-validation-for="CustomId" class="text-danger"></span>
+                        <small class="text-muted">@Localizer["CustomIdHelp"]</small>
+                    </div>
+
+                    <!-- String Fields -->
+                    @if (inventory?.String1Enabled == true)
+                    {
+                        <div class="mb-3">
+                            <label asp-for="StringValue1" class="form-label">@inventory.String1Name</label>
+                            @if (!string.IsNullOrEmpty(inventory.String1Description))
+                            {
+                                <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="@inventory.String1Description"></i>
+                            }
+                            <input asp-for="StringValue1" class="form-control" />
+                        </div>
+                    }
+
+                    @if (inventory?.String2Enabled == true)
+                    {
+                        <div class="mb-3">
+                            <label asp-for="StringValue2" class="form-label">@inventory.String2Name</label>
+                            @if (!string.IsNullOrEmpty(inventory.String2Description))
+                            {
+                                <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="@inventory.String2Description"></i>
+                            }
+                            <input asp-for="StringValue2" class="form-control" />
+                        </div>
+                    }
+
+                    @if (inventory?.String3Enabled == true)
+                    {
+                        <div class="mb-3">
+                            <label asp-for="StringValue3" class="form-label">@inventory.String3Name</label>
+                            @if (!string.IsNullOrEmpty(inventory.String3Description))
+                            {
+                                <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="@inventory.String3Description"></i>
+                            }
+                            <input asp-for="StringValue3" class="form-control" />
+                        </div>
+                    }
+
+                    <!-- Text Fields -->
+                    @if (inventory?.Text1Enabled == true)
+                    {
+                        <div class="mb-3">
+                            <label asp-for="TextValue1" class="form-label">@inventory.Text1Name</label>
+                            @if (!string.IsNullOrEmpty(inventory.Text1Description))
+                            {
+                                <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="@inventory.Text1Description"></i>
+                            }
+                            <textarea asp-for="TextValue1" class="form-control" rows="3"></textarea>
+                        </div>
+                    }
+
+                    @if (inventory?.Text2Enabled == true)
+                    {
+                        <div class="mb-3">
+                            <label asp-for="TextValue2" class="form-label">@inventory.Text2Name</label>
+                            @if (!string.IsNullOrEmpty(inventory.Text2Description))
+                            {
+                                <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="@inventory.Text2Description"></i>
+                            }
+                            <textarea asp-for="TextValue2" class="form-control" rows="3"></textarea>
+                        </div>
+                    }
+
+                    @if (inventory?.Text3Enabled == true)
+                    {
+                        <div class="mb-3">
+                            <label asp-for="TextValue3" class="form-label">@inventory.Text3Name</label>
+                            @if (!string.IsNullOrEmpty(inventory.Text3Description))
+                            {
+                                <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="@inventory.Text3Description"></i>
+                            }
+                            <textarea asp-for="TextValue3" class="form-control" rows="3"></textarea>
+                        </div>
+                    }
+
+                    <!-- Number Fields -->
+                    @if (inventory?.Number1Enabled == true)
+                    {
+                        <div class="mb-3">
+                            <label asp-for="NumberValue1" class="form-label">@inventory.Number1Name</label>
+                            @if (!string.IsNullOrEmpty(inventory.Number1Description))
+                            {
+                                <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="@inventory.Number1Description"></i>
+                            }
+                            <input asp-for="NumberValue1" class="form-control" type="number" step="any" />
+                        </div>
+                    }
+
+                    @if (inventory?.Number2Enabled == true)
+                    {
+                        <div class="mb-3">
+                            <label asp-for="NumberValue2" class="form-label">@inventory.Number2Name</label>
+                            @if (!string.IsNullOrEmpty(inventory.Number2Description))
+                            {
+                                <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="@inventory.Number2Description"></i>
+                            }
+                            <input asp-for="NumberValue2" class="form-control" type="number" step="any" />
+                        </div>
+                    }
+
+                    @if (inventory?.Number3Enabled == true)
+                    {
+                        <div class="mb-3">
+                            <label asp-for="NumberValue3" class="form-label">@inventory.Number3Name</label>
+                            @if (!string.IsNullOrEmpty(inventory.Number3Description))
+                            {
+                                <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="@inventory.Number3Description"></i>
+                            }
+                            <input asp-for="NumberValue3" class="form-control" type="number" step="any" />
+                        </div>
+                    }
+
+                    <!-- Boolean Fields -->
+                    @if (inventory?.Bool1Enabled == true)
+                    {
+                        <div class="mb-3 form-check">
+                            <input asp-for="BoolValue1" class="form-check-input" />
+                            <label asp-for="BoolValue1" class="form-check-label">@inventory.Bool1Name</label>
+                            @if (!string.IsNullOrEmpty(inventory.Bool1Description))
+                            {
+                                <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="@inventory.Bool1Description"></i>
+                            }
+                        </div>
+                    }
+
+                    @if (inventory?.Bool2Enabled == true)
+                    {
+                        <div class="mb-3 form-check">
+                            <input asp-for="BoolValue2" class="form-check-input" />
+                            <label asp-for="BoolValue2" class="form-check-label">@inventory.Bool2Name</label>
+                            @if (!string.IsNullOrEmpty(inventory.Bool2Description))
+                            {
+                                <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="@inventory.Bool2Description"></i>
+                            }
+                        </div>
+                    }
+
+                    @if (inventory?.Bool3Enabled == true)
+                    {
+                        <div class="mb-3 form-check">
+                            <input asp-for="BoolValue3" class="form-check-input" />
+                            <label asp-for="BoolValue3" class="form-check-label">@inventory.Bool3Name</label>
+                            @if (!string.IsNullOrEmpty(inventory.Bool3Description))
+                            {
+                                <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="@inventory.Bool3Description"></i>
+                            }
+                        </div>
+                    }
+
+                    <!-- Document Links -->
+                    @if (inventory?.DocumentLink1Enabled == true)
+                    {
+                        <div class="mb-3">
+                            <label asp-for="DocumentLink1" class="form-label">@inventory.DocumentLink1Name</label>
+                            @if (!string.IsNullOrEmpty(inventory.DocumentLink1Description))
+                            {
+                                <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="@inventory.DocumentLink1Description"></i>
+                            }
+                            <input asp-for="DocumentLink1" class="form-control" type="url" />
+                        </div>
+                    }
+
+                    @if (inventory?.DocumentLink2Enabled == true)
+                    {
+                        <div class="mb-3">
+                            <label asp-for="DocumentLink2" class="form-label">@inventory.DocumentLink2Name</label>
+                            @if (!string.IsNullOrEmpty(inventory.DocumentLink2Description))
+                            {
+                                <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="@inventory.DocumentLink2Description"></i>
+                            }
+                            <input asp-for="DocumentLink2" class="form-control" type="url" />
+                        </div>
+                    }
+
+                    @if (inventory?.DocumentLink3Enabled == true)
+                    {
+                        <div class="mb-3">
+                            <label asp-for="DocumentLink3" class="form-label">@inventory.DocumentLink3Name</label>
+                            @if (!string.IsNullOrEmpty(inventory.DocumentLink3Description))
+                            {
+                                <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="@inventory.DocumentLink3Description"></i>
+                            }
+                            <input asp-for="DocumentLink3" class="form-control" type="url" />
+                        </div>
+                    }
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">@Localizer["Save"]</button>
+                        <a asp-action="Details" asp-controller="Inventory" asp-route-id="@Model.InventoryId" class="btn btn-secondary">@Localizer["Cancel"]</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+    </script>
+}

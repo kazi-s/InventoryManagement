@@ -1,0 +1,169 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@model SearchResultsViewModel
+
+@{
+    ViewData["Title"] = string.IsNullOrEmpty(Model.Tag) 
+        ? $"{Localizer["SearchResults"]}: {Model.Query}"
+        : $"{Localizer["Tag"]}: {Model.Tag}";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    @if (!string.IsNullOrEmpty(Model.Query))
+                    {
+                        @Localizer["SearchResultsFor"] <span class="text-primary">"@Model.Query"</span>
+                    }
+                    else if (!string.IsNullOrEmpty(Model.Tag))
+                    {
+                        @Localizer["InventoriesTagged"] <span class="badge bg-primary">@Model.Tag</span>
+                    }
+                    <small class="text-muted ms-2">(@Model.TotalCount @Localizer["results"])</small>
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                @if (!Model.Inventories.Any())
+                {
+                    <div class="alert alert-info m-3">
+                        <i class="bi bi-info-circle"></i> @Localizer["NoResults"]
+                    </div>
+                }
+                else
+                {
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>@Localizer["Title"]</th>
+                                <th>@Localizer["Category"]</th>
+                                <th>@Localizer["Creator"]</th>
+                                <th>@Localizer["Items"]</th>
+                                <th>@Localizer["Tags"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var inventory in Model.Inventories)
+                            {
+                                <tr onclick="location.href='@Url.Action("Details", "Inventory", new { id = inventory.Id })'" style="cursor: pointer;">
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(inventory.ImageUrl))
+                                        {
+                                            <img src="@inventory.ImageUrl" alt="" style="width: 30px; height: 30px; object-fit: cover;" class="rounded me-2">
+                                        }
+                                        @inventory.Title
+                                        <small class="text-muted d-block">@inventory.Description?.Substring(0, Math.Min(50, inventory.Description?.Length ?? 0))...</small>
+                                    </td>
+                                    <td>@inventory.CategoryName</td>
+                                    <td>@inventory.CreatorName</td>
+                                    <td>@inventory.ItemCount</td>
+                                    <td>
+                                        @foreach (var tag in inventory.Tags.Take(3))
+                                        {
+                                            <a href="@Url.Action("Tag", "Search", new { tag })" class="badge bg-primary text-decoration-none me-1" onclick="event.stopPropagation();">
+                                                @tag
+                                            </a>
+                                        }
+                                        @if (inventory.Tags.Count > 3)
+                                        {
+                                            <span class="badge bg-secondary">+@(inventory.Tags.Count - 3)</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        @if (Model.TotalPages > 1)
+        {
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(Model.CurrentPage <= 1 ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { q = Model.Query, tag = Model.Tag, page = Model.CurrentPage - 1 })">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                    </li>
+                    
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        if (i == 1 || i == Model.TotalPages || (i >= Model.CurrentPage - 2 && i <= Model.CurrentPage + 2))
+                        {
+                            <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { q = Model.Query, tag = Model.Tag, page = i })">@i</a>
+                            </li>
+                        }
+                        else if (i == Model.CurrentPage - 3 || i == Model.CurrentPage + 3)
+                        {
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        }
+                    }
+                    
+                    <li class="page-item @(Model.CurrentPage >= Model.TotalPages ? "disabled" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { q = Model.Query, tag = Model.Tag, page = Model.CurrentPage + 1 })">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        }
+    </div>
+
+    <!-- Sidebar with Popular Tags -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">@Localizer["PopularTags"]</h5>
+            </div>
+            <div class="card-body">
+                @if (!Model.PopularTags.Any())
+                {
+                    <p class="text-muted">@Localizer["NoTags"]</p>
+                }
+                else
+                {
+                    @foreach (var tag in Model.PopularTags)
+                    {
+                        var fontSize = 0.8 + (tag.Value * 0.05);
+                        if (fontSize > 1.5) fontSize = 1.5;
+                        
+                        <a href="@Url.Action("Tag", "Search", new { tag = tag.Key })" 
+                           class="badge bg-primary text-decoration-none me-2 mb-2"
+                           style="font-size: @(fontSize)rem; @(tag.Key == Model.Tag ? "background-color: var(--bs-warning) !important;" : "")">
+                            @tag.Key <span class="badge bg-light text-dark">@tag.Value</span>
+                        </a>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Live search suggestions
+        const searchInput = document.querySelector('input[name="q"]');
+        if (searchInput) {
+            let timeout;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(timeout);
+                timeout = setTimeout(async () => {
+                    const term = this.value;
+                    if (term.length < 2) return;
+                    
+                    const response = await fetch(`/Search/Suggest?term=${encodeURIComponent(term)}`);
+                    const suggestions = await response.json();
+                    
+                    // You can implement a suggestions dropdown here
+                    console.log(suggestions);
+                }, 300);
+            });
+        }
+    </script>
+}

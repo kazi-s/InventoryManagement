@@ -1,0 +1,240 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+@model UserListViewModel
+
+@{
+    ViewData["Title"] = Localizer["UserManagement"];
+}
+
+<div class="row mb-4">
+    <div class="col">
+        <h2>@Localizer["UserManagement"]</h2>
+    </div>
+</div>
+
+<!-- Search Bar -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <form method="get" class="d-flex">
+            <input type="text" name="search" class="form-control me-2" placeholder="@Localizer["SearchUsers"]" value="@Model.SearchTerm" />
+            <input type="hidden" name="sortBy" value="@Model.SortBy" />
+            <input type="hidden" name="ascending" value="@Model.SortAscending" />
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search"></i> @Localizer["Search"]
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Users Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>
+                                <a href="#" class="sort-link text-decoration-none" data-sort="name">
+                                    @Localizer["Name"]
+                                    @if (Model.SortBy == "name")
+                                    {
+                                        <i class="bi bi-arrow-@(Model.SortAscending ? "up" : "down")"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th>
+                                <a href="#" class="sort-link text-decoration-none" data-sort="email">
+                                    @Localizer["Email"]
+                                    @if (Model.SortBy == "email")
+                                    {
+                                        <i class="bi bi-arrow-@(Model.SortAscending ? "up" : "down")"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th>
+                                <a href="#" class="sort-link text-decoration-none" data-sort="created">
+                                    @Localizer["Joined"]
+                                    @if (Model.SortBy == "created")
+                                    {
+                                        <i class="bi bi-arrow-@(Model.SortAscending ? "up" : "down")"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th>
+                                <a href="#" class="sort-link text-decoration-none" data-sort="inventories">
+                                    @Localizer["Inventories"]
+                                    @if (Model.SortBy == "inventories")
+                                    {
+                                        <i class="bi bi-arrow-@(Model.SortAscending ? "up" : "down")"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th>
+                                <a href="#" class="sort-link text-decoration-none" data-sort="items">
+                                    @Localizer["Items"]
+                                    @if (Model.SortBy == "items")
+                                    {
+                                        <i class="bi bi-arrow-@(Model.SortAscending ? "up" : "down")"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th>
+                                <a href="#" class="sort-link text-decoration-none" data-sort="blocked">
+                                    @Localizer["Status"]
+                                    @if (Model.SortBy == "blocked")
+                                    {
+                                        <i class="bi bi-arrow-@(Model.SortAscending ? "up" : "down")"></i>
+                                    }
+                                </a>
+                            </th>
+                            <th>@Localizer["Role"]</th>
+                            <th>@Localizer["Actions"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model.Users)
+                        {
+                            <tr>
+                                <td>
+                                    <a asp-action="UserDetails" asp-route-userId="@user.Id" class="text-decoration-none">
+                                        @user.FirstName @user.LastName
+                                        <small class="text-muted d-block">@@@user.UserName</small>
+                                    </a>
+                                </td>
+                                <td>@user.Email</td>
+                                <td>@user.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                <td>@user.InventoryCount</td>
+                                <td>@user.ItemCount</td>
+                                <td>
+                                    @if (user.IsBlocked)
+                                    {
+                                        <span class="badge bg-danger">@Localizer["Blocked"]</span>
+                                        @if (user.BlockedUntil.HasValue)
+                                        {
+                                            <small class="d-block">@Localizer["Until"] @user.BlockedUntil.Value.ToString("MMM dd, yyyy")</small>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">@Localizer["Active"]</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (user.IsAdmin)
+                                    {
+                                        <span class="badge bg-warning">@Localizer["Admin"]</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@Localizer["User"]</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        @if (!user.IsAdmin)
+                                        {
+                                            <form asp-action="ToggleAdmin" method="post" class="d-inline">
+                                                <input type="hidden" name="userId" value="@user.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-warning" title="@Localizer["MakeAdmin"]">
+                                                    <i class="bi bi-shield-plus"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="ToggleAdmin" method="post" class="d-inline">
+                                                <input type="hidden" name="userId" value="@user.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="@Localizer["RemoveAdmin"]">
+                                                    <i class="bi bi-shield-minus"></i>
+                                                </button>
+                                            </form>
+                                        }
+
+                                        @if (user.IsBlocked)
+                                        {
+                                            <form asp-action="ToggleBlock" method="post" class="d-inline">
+                                                <input type="hidden" name="userId" value="@user.Id" />
+                                                <button type="submit" class="btn btn-sm btn-outline-success" title="@Localizer["Unblock"]">
+                                                    <i class="bi bi-unlock"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#blockModal-@user.Id" title="@Localizer["Block"]">
+                                                <i class="bi bi-lock"></i>
+                                            </button>
+                                        }
+
+                                        <form asp-action="DeleteUser" method="post" class="d-inline" onsubmit="return confirm('@Localizer["ConfirmDelete"]')">
+                                            <input type="hidden" name="userId" value="@user.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="@Localizer["Delete"]">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                    <!-- Block Modal -->
+                                    <div class="modal fade" id="blockModal-@user.Id" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">@Localizer["BlockUser"] @user.UserName</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form asp-action="ToggleBlock" method="post">
+                                                    <div class="modal-body">
+                                                        <input type="hidden" name="userId" value="@user.Id" />
+                                                        <div class="mb-3">
+                                                            <label class="form-label">@Localizer["BlockDuration"]</label>
+                                                            <select name="days" class="form-select">
+                                                                <option value="">@Localizer["Indefinitely"]</option>
+                                                                <option value="1">@Localizer["1Day"]</option>
+                                                                <option value="3">@Localizer["3Days"]</option>
+                                                                <option value="7">@Localizer["7Days"]</option>
+                                                                <option value="30">@Localizer["30Days"]</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Localizer["Cancel"]</button>
+                                                        <button type="submit" class="btn btn-warning">@Localizer["Block"]</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sorting Script -->
+@section Scripts {
+    <script>
+        document.querySelectorAll('.sort-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const sortBy = this.dataset.sort;
+                const currentSort = '@Model.SortBy';
+                const currentAscending = '@Model.SortAscending' === 'True';
+                
+                let ascending = true;
+                if (sortBy === currentSort) {
+                    ascending = !currentAscending;
+                }
+                
+                const url = new URL(window.location.href);
+                url.searchParams.set('sortBy', sortBy);
+                url.searchParams.set('ascending', ascending);
+                window.location.href = url.toString();
+            });
+        });
+    </script>
+}
