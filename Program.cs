@@ -4,7 +4,6 @@ using InventoryManagement.Data;
 using InventoryManagement.Models.Entities;
 using Microsoft.AspNetCore.Localization;
 using InventoryManagement.Hubs;
-using Npgsql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,79 +26,22 @@ var localizationOptions = new RequestLocalizationOptions()
 localizationOptions.RequestCultureProviders.Insert(0, 
     new CookieRequestCultureProvider());
 
-// Configure Database with proper environment variable handling
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// Configure Database - SIMPLIFIED
+// First try environment variable (Render sets this)
+var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
 
+// If not found, try appsettings.json
 if (string.IsNullOrEmpty(connectionString))
 {
-    // Try DATABASE_URL first (Render's preferred format)
-    var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-    if (!string.IsNullOrEmpty(databaseUrl))
-    {
-        // Parse DATABASE_URL into Npgsql connection string
-        var uri = new Uri(databaseUrl);
-        var userInfo = uri.UserInfo.Split(':');
-        var username = userInfo[0];
-        var password = userInfo[1];
-        var host = uri.Host;
-        var port = uri.Port > 0 ? uri.Port : 5432;
-        var database = uri.AbsolutePath.TrimStart('/');
-        
-        var npgsqlBuilder = new NpgsqlConnectionStringBuilder
-        {
-            Host = host,
-            Port = port,
-            Database = database,
-            Username = username,
-            Password = password,
-            SslMode = SslMode.Require,
-            TrustServerCertificate = true
-        };
-        connectionString = npgsqlBuilder.ToString();
-    }
-    
-    // If still null, try ConnectionStrings__DefaultConnection
-    if (string.IsNullOrEmpty(connectionString))
-    {
-        connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
-    }
-    
-    // If still null, try individual variables
-    if (string.IsNullOrEmpty(connectionString))
-    {
-        var dbHost = Environment.GetEnvironmentVariable("DATABASE_HOST") ?? 
-                    Environment.GetEnvironmentVariable("PGHOST");
-        var dbPort = Environment.GetEnvironmentVariable("DATABASE_PORT") ?? 
-                    Environment.GetEnvironmentVariable("PGPORT") ?? "5432";
-        var dbName = Environment.GetEnvironmentVariable("DATABASE_NAME") ?? 
-                    Environment.GetEnvironmentVariable("PGDATABASE") ?? "inventorymanagement";
-        var dbUser = Environment.GetEnvironmentVariable("DATABASE_USER") ?? 
-                    Environment.GetEnvironmentVariable("PGUSER");
-        var dbPassword = Environment.GetEnvironmentVariable("DATABASE_PASSWORD") ?? 
-                        Environment.GetEnvironmentVariable("PGPASSWORD");
-        
-        if (!string.IsNullOrEmpty(dbHost) && !string.IsNullOrEmpty(dbUser) && !string.IsNullOrEmpty(dbPassword))
-        {
-            var npgsqlBuilder = new NpgsqlConnectionStringBuilder
-            {
-                Host = dbHost,
-                Port = int.Parse(dbPort),
-                Database = dbName,
-                Username = dbUser,
-                Password = dbPassword,
-                SslMode = SslMode.Require,
-                TrustServerCertificate = true
-            };
-            connectionString = npgsqlBuilder.ToString();
-        }
-    }
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 }
 
+// If still null, throw helpful error
 if (string.IsNullOrEmpty(connectionString))
 {
     throw new InvalidOperationException(
-        "Could not construct database connection string. " +
-        "Please ensure database environment variables are set correctly."
+        "Database connection string not found. " +
+        "Please set ConnectionStrings__DefaultConnection environment variable."
     );
 }
 
