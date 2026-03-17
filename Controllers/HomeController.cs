@@ -17,7 +17,6 @@ namespace InventoryManagement.Controllers
 
         public async Task<IActionResult> Index()
         {
-            // Get latest inventories
             var latestInventories = await _context.Inventories
                 .Include(i => i.Creator)
                 .Include(i => i.Category)
@@ -34,7 +33,6 @@ namespace InventoryManagement.Controllers
                 })
                 .ToListAsync();
 
-            // Get top 5 most popular inventories (by item count)
             var popularInventories = await _context.Inventories
                 .Include(i => i.Creator)
                 .Include(i => i.Category)
@@ -51,7 +49,6 @@ namespace InventoryManagement.Controllers
                 })
                 .ToListAsync();
 
-            // Get tags for tag cloud
             var tags = await _context.Tags
                 .Select(t => new
                 {

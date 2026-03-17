@@ -10,7 +10,6 @@ namespace InventoryManagement.Models.Entities
         public DateTime? BlockedUntil { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         
-        // Navigation properties
         public virtual ICollection<Inventory> OwnedInventories { get; set; } = new List<Inventory>();
         public virtual ICollection<InventoryAccess> AccessibleInventories { get; set; } = new List<InventoryAccess>();
         public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();

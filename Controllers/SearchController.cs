@@ -17,7 +17,6 @@ namespace InventoryManagement.Controllers
             _logger = logger;
         }
 
-        // GET: Search/Index
         [HttpGet]
         public async Task<IActionResult> Index(string q, string? tag = null, int page = 1)
         {
@@ -50,7 +49,6 @@ namespace InventoryManagement.Controllers
                 }
             }
 
-            // Filter by tag
             if (!string.IsNullOrWhiteSpace(tag))
             {
                 query = query.Where(i => i.InventoryTags != null && 
@@ -76,9 +74,8 @@ namespace InventoryManagement.Controllers
                     CreatedAt = i.CreatedAt,
                     Tags = i.InventoryTags != null ? i.InventoryTags.Select(it => it.Tag != null ? it.Tag.Name : string.Empty).ToList() : new List<string?>()
                 })
-                .ToListAsync();  // This was misplaced
+                .ToListAsync();
 
-            // Get popular tags for sidebar
             var popularTags = await _context.Tags
                 .OrderByDescending(t => t.InventoryTags != null ? t.InventoryTags.Count : 0)
                 .Take(20)
@@ -100,14 +97,12 @@ namespace InventoryManagement.Controllers
             return View(viewModel);
         }
 
-        // GET: Search/Tag/{tag}
         [HttpGet]
         public async Task<IActionResult> Tag(string tag)
         {
             return await Index("", tag, 1);
         }
 
-        // GET: Search/Suggest
         [HttpGet]
         public async Task<IActionResult> Suggest(string term)
         {

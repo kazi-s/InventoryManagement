@@ -11,7 +11,6 @@ namespace InventoryManagement.Models.ViewModels
         [Display(Name = "Custom ID")]
         public string CustomId { get; set; } = string.Empty;
         
-        // String values
         [Display(Name = "String Field 1")]
         public string? StringValue1 { get; set; }
         
@@ -31,7 +30,6 @@ namespace InventoryManagement.Models.ViewModels
         [Display(Name = "Text Field 3")]
         public string? TextValue3 { get; set; }
         
-        // Number values
         [Display(Name = "Number Field 1")]
         public decimal? NumberValue1 { get; set; }
         
@@ -41,7 +39,6 @@ namespace InventoryManagement.Models.ViewModels
         [Display(Name = "Number Field 3")]
         public decimal? NumberValue3 { get; set; }
         
-        // Boolean values
         [Display(Name = "Boolean Field 1")]
         public bool BoolValue1 { get; set; }
         
@@ -51,7 +48,6 @@ namespace InventoryManagement.Models.ViewModels
         [Display(Name = "Boolean Field 3")]
         public bool BoolValue3 { get; set; }
         
-        // Document links
         [Display(Name = "Document Link 1")]
         [Url]
         public string? DocumentLink1 { get; set; }
@@ -64,7 +60,6 @@ namespace InventoryManagement.Models.ViewModels
         [Url]
         public string? DocumentLink3 { get; set; }
         
-        // Inventory configuration (for UI)
         public Inventory? Inventory { get; set; }
     }
 

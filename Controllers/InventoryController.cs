@@ -22,7 +22,6 @@ namespace InventoryManagement.Controllers
             _logger = logger;
         }
 
-        // GET: Inventory/Create
         [HttpGet]
         public async Task<IActionResult> Create()
         {
@@ -34,7 +33,6 @@ namespace InventoryManagement.Controllers
             return View(viewModel);
         }
 
-        // POST: Inventory/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateInventoryViewModel model)
@@ -53,7 +51,6 @@ namespace InventoryManagement.Controllers
                     ImageUrl = model.ImageUrl,
                     CustomIdFormat = model.CustomIdFormat,
                     
-                    // String fields
                     String1Enabled = model.String1Enabled,
                     String1Name = model.String1Name,
                     String1Description = model.String1Description,
@@ -69,7 +66,6 @@ namespace InventoryManagement.Controllers
                     String3Description = model.String3Description,
                     String3ShowInTable = model.String3ShowInTable,
                     
-                    // Text fields
                     Text1Enabled = model.Text1Enabled,
                     Text1Name = model.Text1Name,
                     Text1Description = model.Text1Description,
@@ -85,7 +81,6 @@ namespace InventoryManagement.Controllers
                     Text3Description = model.Text3Description,
                     Text3ShowInTable = model.Text3ShowInTable,
                     
-                    // Number fields
                     Number1Enabled = model.Number1Enabled,
                     Number1Name = model.Number1Name,
                     Number1Description = model.Number1Description,
@@ -101,7 +96,6 @@ namespace InventoryManagement.Controllers
                     Number3Description = model.Number3Description,
                     Number3ShowInTable = model.Number3ShowInTable,
                     
-                    // Boolean fields
                     Bool1Enabled = model.Bool1Enabled,
                     Bool1Name = model.Bool1Name,
                     Bool1Description = model.Bool1Description,
@@ -117,7 +111,6 @@ namespace InventoryManagement.Controllers
                     Bool3Description = model.Bool3Description,
                     Bool3ShowInTable = model.Bool3ShowInTable,
                     
-                    // Document link fields
                     DocumentLink1Enabled = model.DocumentLink1Enabled,
                     DocumentLink1Name = model.DocumentLink1Name,
                     DocumentLink1Description = model.DocumentLink1Description,
@@ -140,12 +133,10 @@ namespace InventoryManagement.Controllers
                 return RedirectToAction(nameof(Details), new { id = inventory.Id });
             }
 
-            // If we got this far, something failed, redisplay form
             model.Categories = new SelectList(await _context.Categories.ToListAsync(), "Id", "Name", model.CategoryId);
             return View(model);
         }
 
-        // GET: Inventory/Details/5
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
@@ -174,7 +165,6 @@ namespace InventoryManagement.Controllers
             return View(inventory);
         }
 
-        // GET: Inventory/MyInventories
         [HttpGet]
         public async Task<IActionResult> MyInventories()
         {
@@ -202,7 +192,6 @@ namespace InventoryManagement.Controllers
             return View(inventories);
         }
 
-        // POST: Inventory/UpdateSettings
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateSettings(int id, string title, string description, int categoryId, string imageUrl, bool isPublic, string[] tags)
@@ -216,14 +205,12 @@ namespace InventoryManagement.Controllers
                 return NotFound();
             }
 
-            // Check permissions
             var userId = UserManager.GetUserId(User);
             if (!User.IsInRole("Admin") && inventory.CreatorId != userId)
             {
                 return Forbid();
             }
 
-            // Update basic settings
             inventory.Title = title;
             inventory.Description = description;
             inventory.CategoryId = categoryId;
@@ -231,7 +218,6 @@ namespace InventoryManagement.Controllers
             inventory.IsPublic = isPublic;
             inventory.UpdatedAt = DateTime.UtcNow;
 
-            // Update tags
             var currentTags = inventory.InventoryTags?.Select(it => it.Tag?.Name).ToList() ?? new List<string?>();
             var tagsToAdd = tags.Except(currentTags).ToList();
             var tagsToRemove = currentTags.Except(tags).ToList();
@@ -266,7 +252,6 @@ namespace InventoryManagement.Controllers
             return Json(new { success = true });
         }
 
-        // POST: Inventory/AutoSaveSettings
         [HttpPost]
         public async Task<IActionResult> AutoSaveSettings(int id, string title, string description, int categoryId, string imageUrl, bool isPublic)
         {
@@ -287,7 +272,6 @@ namespace InventoryManagement.Controllers
             return Json(new { success = true });
         }
 
-        // POST: Inventory/GenerateIdPreview
         [HttpPost]
         public async Task<IActionResult> GenerateIdPreview([FromBody] IdPreviewRequest request)
         {
@@ -301,7 +285,6 @@ namespace InventoryManagement.Controllers
             return Json(new { preview });
         }
 
-        // POST: Inventory/SaveIdFormat
         [HttpPost]
         public async Task<IActionResult> SaveIdFormat([FromBody] SaveIdFormatRequest request)
         {
@@ -311,7 +294,6 @@ namespace InventoryManagement.Controllers
                 return NotFound();
             }
 
-            // Check permissions
             var userId = UserManager.GetUserId(User);
             if (!User.IsInRole("Admin") && inventory.CreatorId != userId)
             {
@@ -326,7 +308,6 @@ namespace InventoryManagement.Controllers
             return Json(new { success = true });
         }
 
-        // POST: Inventory/UpdateAccess
         [HttpPost]
         public async Task<IActionResult> UpdateAccess([FromBody] UpdateAccessRequest request)
         {
@@ -339,7 +320,6 @@ namespace InventoryManagement.Controllers
             return Json(new { success = true });
         }
 
-        // POST: Inventory/AddUserAccess
         [HttpPost]
         public async Task<IActionResult> AddUserAccess([FromBody] AddUserAccessRequest request)
         {
@@ -359,7 +339,6 @@ namespace InventoryManagement.Controllers
             return Json(new { success = true });
         }
 
-        // POST: Inventory/RemoveUserAccess
         [HttpPost]
         public async Task<IActionResult> RemoveUserAccess([FromBody] RemoveUserAccessRequest request)
         {
@@ -375,7 +354,6 @@ namespace InventoryManagement.Controllers
             return Json(new { success = true });
         }
 
-        // POST: Inventory/UpdateFields
         [HttpPost]
         public async Task<IActionResult> UpdateFields([FromBody] UpdateFieldsRequest request)
         {

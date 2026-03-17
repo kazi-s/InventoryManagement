@@ -7,7 +7,6 @@ using InventoryManagement.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
@@ -15,14 +14,12 @@ builder.Services.AddControllersWithViews()
     .AddViewLocalization()
     .AddDataAnnotationsLocalization();
 
-// Configure supported cultures
 var supportedCultures = new[] { "en", "es" };
 var localizationOptions = new RequestLocalizationOptions()
     .SetDefaultCulture("en")
     .AddSupportedCultures(supportedCultures)
     .AddSupportedUICultures(supportedCultures);
 
-// Use cookie to remember language choice
 localizationOptions.RequestCultureProviders.Insert(0, 
     new CookieRequestCultureProvider());
 
@@ -33,7 +30,6 @@ if (string.IsNullOrEmpty(connectionString))
     connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 }
 
-// If still null, throw helpful error
 if (string.IsNullOrEmpty(connectionString))
 {
     throw new InvalidOperationException(
@@ -45,28 +41,23 @@ if (string.IsNullOrEmpty(connectionString))
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-// Configure Identity
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
-    // Password settings
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 6;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = true;
     options.Password.RequireLowercase = true;
     
-    // Lockout settings
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
     options.Lockout.MaxFailedAccessAttempts = 5;
     options.Lockout.AllowedForNewUsers = true;
     
-    // User settings
     options.User.RequireUniqueEmail = true;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// Configure Authentication with Google and Facebook
 builder.Services.AddAuthentication()
     .AddGoogle(options =>
     {
@@ -81,7 +72,6 @@ builder.Services.AddAuthentication()
         options.CallbackPath = "/signin-facebook";
     });
 
-// Configure Cookie settings
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login";
@@ -91,11 +81,9 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 });
 
-// Add HTTP Context Accessor
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSignalR();
 
-// Add Session for theme/language preferences
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -106,14 +94,12 @@ builder.Services.AddSession(options =>
 
 var app = builder.Build();
 
-// Automatically apply database migrations
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     dbContext.Database.Migrate();
 }
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -134,7 +120,6 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// Seed data
 using (var scope = app.Services.CreateScope())
 {
     await SeedDataAsync(scope.ServiceProvider);
@@ -147,13 +132,11 @@ async Task SeedDataAsync(IServiceProvider services)
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = services.GetRequiredService<UserManager<User>>();
     
-    // Ensure Admin role exists
     if (!await roleManager.RoleExistsAsync("Admin"))
     {
         await roleManager.CreateAsync(new IdentityRole("Admin"));
     }
     
-    // Create initial admin user if none exists
     var adminEmail = "admin@inventory.com";
     var adminUser = await userManager.FindByEmailAsync(adminEmail);
     if (adminUser == null)

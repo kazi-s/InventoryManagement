@@ -14,10 +14,8 @@ namespace InventoryManagement.Models.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
         
-        // Custom ID format (stored as JSON)
         public string CustomIdFormat { get; set; } = "[]";
         
-        // String fields (up to 3)
         public bool String1Enabled { get; set; }
         public string? String1Name { get; set; }
         public string? String1Description { get; set; }
@@ -33,7 +31,6 @@ namespace InventoryManagement.Models.Entities
         public string? String3Description { get; set; }
         public bool String3ShowInTable { get; set; }
         
-        // Multi-line text fields (up to 3)
         public bool Text1Enabled { get; set; }
         public string? Text1Name { get; set; }
         public string? Text1Description { get; set; }
@@ -49,7 +46,6 @@ namespace InventoryManagement.Models.Entities
         public string? Text3Description { get; set; }
         public bool Text3ShowInTable { get; set; }
         
-        // Numeric fields (up to 3)
         public bool Number1Enabled { get; set; }
         public string? Number1Name { get; set; }
         public string? Number1Description { get; set; }
@@ -65,7 +61,6 @@ namespace InventoryManagement.Models.Entities
         public string? Number3Description { get; set; }
         public bool Number3ShowInTable { get; set; }
         
-        // Boolean fields (up to 3)
         public bool Bool1Enabled { get; set; }
         public string? Bool1Name { get; set; }
         public string? Bool1Description { get; set; }
@@ -81,7 +76,6 @@ namespace InventoryManagement.Models.Entities
         public string? Bool3Description { get; set; }
         public bool Bool3ShowInTable { get; set; }
         
-        // Document/image fields (up to 3)
         public bool DocumentLink1Enabled { get; set; }
         public string? DocumentLink1Name { get; set; }
         public string? DocumentLink1Description { get; set; }
@@ -97,7 +91,6 @@ namespace InventoryManagement.Models.Entities
         public string? DocumentLink3Description { get; set; }
         public bool DocumentLink3ShowInTable { get; set; }
         
-        // Navigation properties
         public virtual Category? Category { get; set; }
         public virtual User? Creator { get; set; }
         public virtual ICollection<InventoryTag> InventoryTags { get; set; } = new List<InventoryTag>();

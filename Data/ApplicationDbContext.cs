@@ -25,19 +25,15 @@ namespace InventoryManagement.Data
         {
             base.OnModelCreating(builder);
             
-            // Set PostgreSQL schema
             builder.HasDefaultSchema("public");
             
-            // Configure composite keys
             builder.Entity<InventoryTag>()
                 .HasKey(it => new { it.InventoryId, it.TagId });
             
-            // Configure unique constraint for CustomId within an inventory
             builder.Entity<Item>()
                 .HasIndex(i => new { i.InventoryId, i.CustomId })
                 .IsUnique();
             
-            // Configure relationships
             builder.Entity<Inventory>()
                 .HasOne(i => i.Creator)
                 .WithMany(u => u.OwnedInventories)
@@ -50,7 +46,6 @@ namespace InventoryManagement.Data
                 .HasForeignKey(i => i.CreatedById)
                 .OnDelete(DeleteBehavior.Restrict);
             
-            // Seed categories
             builder.Entity<Category>().HasData(
                 new Category { Id = 1, Name = "Equipment" },
                 new Category { Id = 2, Name = "Furniture" },
@@ -58,10 +53,8 @@ namespace InventoryManagement.Data
                 new Category { Id = 4, Name = "Other" }
             );
 
-            // PostgreSQL-specific configurations
             builder.Entity<Item>(entity =>
             {
-                // Decimal precision for numeric fields (PostgreSQL syntax)
                 entity.Property(e => e.NumberValue1)
                     .HasColumnType("numeric(18,2)");
                 entity.Property(e => e.NumberValue2)
@@ -70,7 +63,6 @@ namespace InventoryManagement.Data
                     .HasColumnType("numeric(18,2)");
             });
 
-            // Configure Identity tables for PostgreSQL
             builder.Entity<User>(entity =>
             {
                 entity.Property(e => e.Id)

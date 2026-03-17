@@ -21,7 +21,6 @@ namespace InventoryManagement.Controllers
             _logger = logger;
         }
 
-        // GET: Item/Create/5
         [HttpGet]
         public async Task<IActionResult> Create(int inventoryId)
         {
@@ -34,7 +33,6 @@ namespace InventoryManagement.Controllers
                 return NotFound();
             }
 
-            // Check permissions
             var userId = UserManager.GetUserId(User);
             var hasAccess = User.IsInRole("Admin") || 
                            inventory.CreatorId == userId ||
@@ -57,7 +55,6 @@ namespace InventoryManagement.Controllers
             return View(viewModel);
         }
 
-        // POST: Item/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateItemViewModel model)
@@ -80,27 +77,22 @@ namespace InventoryManagement.Controllers
                         CustomId = model.CustomId,
                         CreatedById = userId,
                         
-                        // String values
                         StringValue1 = model.StringValue1,
                         StringValue2 = model.StringValue2,
                         StringValue3 = model.StringValue3,
                         
-                        // Text values
                         TextValue1 = model.TextValue1,
                         TextValue2 = model.TextValue2,
                         TextValue3 = model.TextValue3,
                         
-                        // Number values
                         NumberValue1 = model.NumberValue1,
                         NumberValue2 = model.NumberValue2,
                         NumberValue3 = model.NumberValue3,
                         
-                        // Boolean values
                         BoolValue1 = model.BoolValue1,
                         BoolValue2 = model.BoolValue2,
                         BoolValue3 = model.BoolValue3,
                         
-                        // Document links
                         DocumentLink1 = model.DocumentLink1,
                         DocumentLink2 = model.DocumentLink2,
                         DocumentLink3 = model.DocumentLink3
@@ -126,7 +118,6 @@ namespace InventoryManagement.Controllers
             return View(model);
         }
 
-        // GET: Item/Edit/5
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -140,7 +131,6 @@ namespace InventoryManagement.Controllers
                 return NotFound();
             }
 
-            // Check permissions
             var userId = UserManager.GetUserId(User);
             var hasAccess = User.IsInRole("Admin") || 
                            item.Inventory?.CreatorId == userId ||
@@ -159,27 +149,22 @@ namespace InventoryManagement.Controllers
                 Inventory = item.Inventory,
                 CustomId = item.CustomId,
                 
-                // String values
                 StringValue1 = item.StringValue1,
                 StringValue2 = item.StringValue2,
                 StringValue3 = item.StringValue3,
                 
-                // Text values
                 TextValue1 = item.TextValue1,
                 TextValue2 = item.TextValue2,
                 TextValue3 = item.TextValue3,
                 
-                // Number values
                 NumberValue1 = item.NumberValue1,
                 NumberValue2 = item.NumberValue2,
                 NumberValue3 = item.NumberValue3,
                 
-                // Boolean values
                 BoolValue1 = item.BoolValue1 ?? false,
                 BoolValue2 = item.BoolValue2 ?? false,
                 BoolValue3 = item.BoolValue3 ?? false,
                 
-                // Document links
                 DocumentLink1 = item.DocumentLink1,
                 DocumentLink2 = item.DocumentLink2,
                 DocumentLink3 = item.DocumentLink3
@@ -188,7 +173,6 @@ namespace InventoryManagement.Controllers
             return View(viewModel);
         }
 
-        // POST: Item/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, EditItemViewModel model)
@@ -209,7 +193,6 @@ namespace InventoryManagement.Controllers
                     return NotFound();
                 }
 
-                // Update fields
                 item.CustomId = model.CustomId;
                 item.StringValue1 = model.StringValue1;
                 item.StringValue2 = model.StringValue2;
@@ -238,7 +221,6 @@ namespace InventoryManagement.Controllers
             }
         }
 
-        // POST: Item/Like
         [HttpPost]
         public async Task<IActionResult> Like([FromBody] LikeRequest request)
         {
@@ -254,12 +236,10 @@ namespace InventoryManagement.Controllers
 
             if (existingLike != null)
             {
-                // Unlike
                 _context.ItemLikes.Remove(existingLike);
             }
             else
             {
-                // Like
                 _context.ItemLikes.Add(new ItemLike
                 {
                     ItemId = request.ItemId,
@@ -278,7 +258,6 @@ namespace InventoryManagement.Controllers
             });
         }
 
-        // GET: Item/Delete/5
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
@@ -295,7 +274,6 @@ namespace InventoryManagement.Controllers
             return View(item);
         }
 
-        // POST: Item/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -315,13 +293,11 @@ namespace InventoryManagement.Controllers
 
         private string GenerateCustomId(Inventory inventory)
         {
-            // Parse the custom ID format from JSON
             var format = JsonSerializer.Deserialize<List<IdPart>>(inventory.CustomIdFormat) 
                 ?? new List<IdPart>();
 
             if (!format.Any())
             {
-                // Default format: random 6-digit number
                 return Random.Shared.Next(100000, 999999).ToString();
             }
 

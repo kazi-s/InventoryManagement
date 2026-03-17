@@ -23,10 +23,8 @@ namespace InventoryManagement.Models.ViewModels
         [Display(Name = "Image URL")]
         public string? ImageUrl { get; set; }
 
-        // Custom ID Format (will be stored as JSON)
         public string CustomIdFormat { get; set; } = "[]";
 
-        // String Fields (up to 3)
         public bool String1Enabled { get; set; }
         public string? String1Name { get; set; }
         public string? String1Description { get; set; }
@@ -42,7 +40,6 @@ namespace InventoryManagement.Models.ViewModels
         public string? String3Description { get; set; }
         public bool String3ShowInTable { get; set; }
 
-        // Text (Multi-line) Fields (up to 3)
         public bool Text1Enabled { get; set; }
         public string? Text1Name { get; set; }
         public string? Text1Description { get; set; }
@@ -58,7 +55,6 @@ namespace InventoryManagement.Models.ViewModels
         public string? Text3Description { get; set; }
         public bool Text3ShowInTable { get; set; }
 
-        // Number Fields (up to 3)
         public bool Number1Enabled { get; set; }
         public string? Number1Name { get; set; }
         public string? Number1Description { get; set; }
@@ -74,7 +70,6 @@ namespace InventoryManagement.Models.ViewModels
         public string? Number3Description { get; set; }
         public bool Number3ShowInTable { get; set; }
 
-        // Boolean Fields (up to 3)
         public bool Bool1Enabled { get; set; }
         public string? Bool1Name { get; set; }
         public string? Bool1Description { get; set; }
@@ -90,7 +85,6 @@ namespace InventoryManagement.Models.ViewModels
         public string? Bool3Description { get; set; }
         public bool Bool3ShowInTable { get; set; }
 
-        // Document Link Fields (up to 3)
         public bool DocumentLink1Enabled { get; set; }
         public string? DocumentLink1Name { get; set; }
         public string? DocumentLink1Description { get; set; }
@@ -106,7 +100,6 @@ namespace InventoryManagement.Models.ViewModels
         public string? DocumentLink3Description { get; set; }
         public bool DocumentLink3ShowInTable { get; set; }
 
-        // For dropdown
         public SelectList? Categories { get; set; }
     }
 }

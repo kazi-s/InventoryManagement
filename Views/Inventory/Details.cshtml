@@ -263,7 +263,6 @@
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     <script>
-        // Real-time comments with SignalR
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/commentHub")
             .build();
@@ -290,7 +289,6 @@
             return console.error(err.toString());
         });
 
-        // Like functionality
         document.querySelectorAll('.like-button').forEach(btn => {
             btn.addEventListener('click', function() {
                 const itemId = this.dataset.itemId;
@@ -304,11 +302,9 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Update like count
                         const badge = this.previousElementSibling;
                         badge.textContent = data.likes;
                         
-                        // Toggle heart icon
                         const icon = this.querySelector('i');
                         icon.classList.toggle('bi-heart');
                         icon.classList.toggle('bi-heart-fill');
